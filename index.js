@@ -73,7 +73,7 @@ app.post('/dkpsend', async (req, res, next) => {
       //const message = `Transaction and gold removal successful for user ${userId} in the amount of ${goldAmount} in-game gold and ${req.body.walletAddress} address was sent ${req.body.goldAmount}`;
       //res.status(200).json({ message });
       const responseObj = {
-        success: true,
+        success: 'true',
         message: 'Transaction and gold removal successful',
         details: {
             userId: userId,
@@ -97,9 +97,9 @@ app.post('/dkpsend', async (req, res, next) => {
     //}
 } else {
   console.log(responseObj);
-
+  console.log("failed");
     const responseObj = {
-      success: 'true',
+      success: 'false',
       message: 'Transaction and gold removal successful',
       details: {
           userId: userId,
