@@ -83,6 +83,8 @@ app.post('/dkpsend', async (req, res, next) => {
     };
     
     res.status(200).json(responseObj);
+  console.log(responseObj);
+
     //res.status(200).json({ 
     //  //message: 'Transaction and gold removal successful',
     //  //id: `${userId}`,
@@ -94,8 +96,10 @@ app.post('/dkpsend', async (req, res, next) => {
     //  throw 'Error removing gold from user account';
     //}
 } else {
+  console.log(responseObj);
+
     const responseObj = {
-      success: false,
+      success: 'true',
       message: 'Transaction and gold removal successful',
       details: {
           userId: userId,
@@ -105,6 +109,8 @@ app.post('/dkpsend', async (req, res, next) => {
   };
 
   res.status(200).json(responseObj);
+  console.log(responseObj);
+
     throw `Error sending transaction: ${pay_result.result.meta.TransactionResult}`
     
 
