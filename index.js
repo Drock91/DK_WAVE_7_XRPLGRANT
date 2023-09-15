@@ -4,7 +4,6 @@ const app = express();
 const bodyParser = require('body-parser');
 const {TxData} = require('xrpl-txdata');
 const xrpl = require("xrpl");
-const lock = require('async-lock');
 require('dotenv').config();
 const { response } = require('express');
 //no longer in the xumm world. we doing straight comms to xrpl
@@ -68,52 +67,33 @@ app.post('/dkpsend', async (req, res, next) => {
     console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
     const userId = req.body.userId; 
     const goldAmount = req.body.goldAmount; 
-    //const success = await removeGoldFromPlayerAccount(userId, goldAmount);
-    //if (success) {
-      //const message = `Transaction and gold removal successful for user ${userId} in the amount of ${goldAmount} in-game gold and ${req.body.walletAddress} address was sent ${req.body.goldAmount}`;
-      //res.status(200).json({ message });
-      const responseObj = {
-        success: 'true',
-        message: 'Transaction and gold removal successful',
-        details: {
-            userId: userId,
-            goldAmount: goldAmount,
-            walletAddress: req.body.walletAddress
-        }
-    };
-    
-    res.status(200).json(responseObj);
-  console.log(responseObj);
-
-    //res.status(200).json({ 
-    //  //message: 'Transaction and gold removal successful',
-    //  //id: `${userId}`,
-    //  goldTransmute: `${goldAmount}`
-//
-    //});
-
-    //} else {
-    //  throw 'Error removing gold from user account';
-    //}
-} else {
-  console.log(responseObj);
-  console.log("failed");
     const responseObj = {
-      success: 'false',
+      success: 'true',
       message: 'Transaction and gold removal successful',
       details: {
           userId: userId,
           goldAmount: goldAmount,
           walletAddress: req.body.walletAddress
       }
+    };
+    
+    res.status(200).json(responseObj);
+  console.log(responseObj);
+} else {
+  console.log(responseObj);
+  console.log("failed");
+  const responseObj = {
+    success: 'false',
+    message: 'Transaction and gold removal successful',
+    details: {
+        userId: userId,
+        goldAmount: goldAmount,
+        walletAddress: req.body.walletAddress
+    }
   };
-
   res.status(200).json(responseObj);
   console.log(responseObj);
-
-    throw `Error sending transaction: ${pay_result.result.meta.TransactionResult}`
-    
-
+  throw `Error sending transaction: ${pay_result.result.meta.TransactionResult}`
 }
 client.disconnect()
 });
