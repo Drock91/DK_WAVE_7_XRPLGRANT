@@ -34,36 +34,44 @@ app.use(express.json());
 app.post('/dkpsend', async (req, res, next) => {
   //this assumes the json object coming in is called wallet
   console.log('We are listening')
- // console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
   console.log(req.body.userId);
-
-  //res.status(200).json({ message: 'Transaction and gold removal successful' });
   console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
-  //no longer in the xumm world. we doing straight comms to xrpl
   const client = new xrpl.Client("wss://xrplcluster.com");
   await client.connect();
-  
   const dkpWallet = xrpl.Wallet.fromSeed(process.env.SENDER_SEED);
   const currency_code = "DKP"
   // Send token ----------------------------------------------------------------
-  //this issue quantity is up to you. you can use math to determine what to send or just send a fixed amount
   const issue_quantity = req.body.goldAmount
   const send_token_tx = {
     "TransactionType": "Payment",
     "Account": process.env.SENDER_PUBLIC,
-    "Amount": req.body.goldAmount,
-    //"Amount": {
-    //  "currency": currency_code,
-    //  "value": issue_quantity,
-    //  "issuer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
-    //},
+    //"Amount": req.body.goldAmount,
+    "Amount": {
+      "currency": currency_code,
+      "value": issue_quantity,
+      "issuer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
+    },
     "Destination": req.body.walletAddress
   }
   const pay_prepared = await client.autofill(send_token_tx)
   const pay_signed = dkpWallet.sign(pay_prepared)
   const pay_result = await client.submitAndWait(pay_signed.tx_blob)
+  const acceptingWallet = req.body.walletAddress;
+  
   console.log(pay_result);
   if (pay_result.result.meta.TransactionResult == "tesSUCCESS") {
+    const xrpBalance = await client.getXrpBalance(req.body.walletAddress);
+    // Query all balances including tokens
+    const allBalances = await client.getBalances(req.body.walletAddress);
+
+    // Find DKP balance from allBalances
+    let dkpBalance = "0";
+    for (const balance of allBalances) {
+      if (balance.currency === "DKP") {
+        dkpBalance = balance.value;
+        break;
+      }
+    }
     console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
     const userId = req.body.userId; 
     const goldAmount = req.body.goldAmount; 
@@ -71,11 +79,13 @@ app.post('/dkpsend', async (req, res, next) => {
       success: 'true',
       message: 'Transaction and gold removal successful',
       details: {
-          userId: userId,
-          goldAmount: goldAmount,
-          walletAddress: req.body.walletAddress
+        userId: req.body.userId,
+        goldAmount: req.body.goldAmount,
+        walletAddress: req.body.walletAddress,
+        xrpBalance: xrpBalance,  // Added XRP balance
+        dkpBalance: dkpBalance   // Added DKP balance
       }
-    };
+    }   
     
     res.status(200).json(responseObj);
   console.log(responseObj);
@@ -88,7 +98,9 @@ app.post('/dkpsend', async (req, res, next) => {
     details: {
         userId: userId,
         goldAmount: goldAmount,
-        walletAddress: req.body.walletAddress
+        walletAddress: req.body.walletAddress,
+        xrpBalance: xrpBalance,  // Added XRP balance
+        dkpBalance: dkpBalance   // Added DKP balance
     }
   };
   res.status(200).json(responseObj);
