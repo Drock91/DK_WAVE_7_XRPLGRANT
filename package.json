@@ -14,9 +14,10 @@
     "dotenv": "^16.3.1",
     "events": "^3.3.0",
     "express": "^4.17.2",
+    "express-rate-limit": "^7.0.1",
     "xrpl": "^2.1.1",
-    "xrpl-txdata": "^1.1.2",
+    "xrpl-txdata": "^1.4.0",
     "xumm-oauth2-pkce": "^2.0.5",
-    "xumm-sdk": "^1.0.3"
+    "xumm-sdk": "^1.9.1"
   }
 }

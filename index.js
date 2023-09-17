@@ -1,4 +1,6 @@
 var express = require('express');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 var router = express.Router();
 const app = express();
 const bodyParser = require('body-parser');
@@ -7,11 +9,50 @@ const xrpl = require("xrpl");
 require('dotenv').config();
 const { response } = require('express');
 const Verify = new TxData();
+const {XummSdk} = require('xumm-sdk')
 var PORT = process.env.PORT || 3000;
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10
+});
+const Sdk = new XummSdk(process.env.XUMM_PUBLIC, process.env.XUMM_PRIVATE)
+app.use('/transmute', limiter);
+app.use('/register', limiter);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
+const pendingQueue = [];
+let currentRequests = 0;
+const MAX_REQUESTS = 95;
+const WINDOW_MS = 60 * 1000; // 1 minute
 
+const release = () => {
+  const numToRelease = Math.min(pendingQueue.length, MAX_REQUESTS - currentRequests);
+  for (let i = 0; i < numToRelease; i++) {
+    const nextRequest = pendingQueue.shift();
+    nextRequest();
+  }
+  currentRequests = Math.max(0, currentRequests - MAX_REQUESTS);
+};
+
+// Release 95 requests every minute
+setInterval(release, WINDOW_MS);
+
+app.post("/xummqueue", async (req, res, next) => {
+  if (currentRequests < MAX_REQUESTS) {
+    currentRequests++;
+    // Process the request
+    await yourExistingCode(req, res);
+    res.status(200).send("Request processed");
+  } else {
+    // Push into queue
+    pendingQueue.push(async () => {
+      currentRequests++;
+      await yourExistingCode(req, res);
+      res.status(200).send("Request processed");
+    });
+  }
+});
 app.post('/dkpsend', async (req, res, next) => {
   console.log('We are listening')
   console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
@@ -78,7 +119,66 @@ app.post('/dkpsend', async (req, res, next) => {
 }
 client.disconnect()
 });
+let pendingPayloadIds = [];
 
+// XUMM webhook handling
+app.post('/xumm-webhook', async (req, res) => {
+  const payloadId = req.body.payloadId;
+  const timestamp = Date.now();
+  const isSigned = req.body.meta.signed;
+  const isResolved = req.body.meta.resolved;
+  const isExpired = req.body.meta.expired;
+  const customMetablob = req.body.customMeta.blob;
+
+  // Add other fields here as needed
+  
+  if (isSigned) {
+    // Logic for signed transactions
+  }
+
+  if (isResolved) {
+    // Logic for resolved transactions
+  }
+
+  if (isExpired) {
+    // Logic for expired transactions
+  }
+
+  // You can push additional information to your pendingPayloadIds array if needed.
+  pendingPayloadIds.push({ payloadId, timestamp, isSigned, isResolved, isExpired, customMetablob });
+
+  res.status(200).send("OK");
+});
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+  pendingPayloadIds = pendingPayloadIds.filter(item => item.timestamp > fiveMinutesAgo);
+}, 5 * 60 * 1000);
+
+// Unity server check endpoint
+app.get('/check-payload/:payloadId', (req, res) => {
+  const { payloadId } = req.params;
+  const xummDetailedResponse = {
+    meta: {
+      exists: true,
+      uuid: payloadId,
+      signed: payload.signed || false, // These are placeholders; replace with real data
+      submit: payload.submit || false,
+      resolved: payload.resolved || false,
+      expired: payload.expired || false,
+    },
+    custom_meta: {
+     blob: payload.customMetablob // Fill this in from the stored data
+    },
+    response: {
+      hex: payload.hex || "", // These are placeholders; replace with real data
+      txid: payload.txid || "",
+      account: payload.account || ""
+    }
+  };
+
+  res.json(xummDetailedResponse);
+});
 app.post('/balance', async (req, res, next) => {
   //this assumes the json object coming in is called wallet
   var wallet = req.get(req.body.wallet);
