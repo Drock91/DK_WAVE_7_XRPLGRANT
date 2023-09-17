@@ -6,35 +6,14 @@ const {TxData} = require('xrpl-txdata');
 const xrpl = require("xrpl");
 require('dotenv').config();
 const { response } = require('express');
-//no longer in the xumm world. we doing straight comms to xrpl
 const Verify = new TxData();
 var PORT = process.env.PORT || 3000;
-//const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
-//let currentSequence;
-//
-//async function getInitialSequence() {
-//  const client = new xrpl.Client("wss://xrplcluster.com");
-//  await client.connect();
-//
-//  const response = await client.request({
-//    command: 'account_info',
-//    account: process.env.SENDER_PUBLIC,
-//  });
-//
-//  currentSequence = response.result.account_data.Sequence;
-//  await client.disconnect();
-//}
-//
-//getInitialSequence(); // Call this function when the server starts
 
-//app.use(bodyParser.urlencoded({ extended: false }));
 app.post('/dkpsend', async (req, res, next) => {
-  //this assumes the json object coming in is called wallet
   console.log('We are listening')
-  console.log(req.body.userId);
   console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
   const client = new xrpl.Client("wss://xrplcluster.com");
   await client.connect();
@@ -45,10 +24,9 @@ app.post('/dkpsend', async (req, res, next) => {
   const send_token_tx = {
     "TransactionType": "Payment",
     "Account": process.env.SENDER_PUBLIC,
-    //"Amount": req.body.goldAmount,
     "Amount": {
       "currency": currency_code,
-      "value": issue_quantity,
+      "value": req.body.goldAmount,
       "issuer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
     },
     "Destination": req.body.walletAddress
@@ -56,25 +34,17 @@ app.post('/dkpsend', async (req, res, next) => {
   const pay_prepared = await client.autofill(send_token_tx)
   const pay_signed = dkpWallet.sign(pay_prepared)
   const pay_result = await client.submitAndWait(pay_signed.tx_blob)
-  const acceptingWallet = req.body.walletAddress;
-  
   console.log(pay_result);
   if (pay_result.result.meta.TransactionResult == "tesSUCCESS") {
-    const xrpBalance = await client.getXrpBalance(req.body.walletAddress);
-    // Query all balances including tokens
-    const allBalances = await client.getBalances(req.body.walletAddress);
-
-    // Find DKP balance from allBalances
+    console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
+    let xrpBalance = await client.getXrpBalance(req.body.walletAddress);
     let dkpBalance = "0";
-    for (const balance of allBalances) {
-      if (balance.currency === "DKP") {
+    const balances = await client.getBalances(req.body.walletAddress);
+    for (const balance of balances) {
+      if (balance.currency === 'DKP') {
         dkpBalance = balance.value;
-        break;
       }
     }
-    console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
-    const userId = req.body.userId; 
-    const goldAmount = req.body.goldAmount; 
     const responseObj = {
       success: 'true',
       message: 'Transaction and gold removal successful',
@@ -82,11 +52,10 @@ app.post('/dkpsend', async (req, res, next) => {
         userId: req.body.userId,
         goldAmount: req.body.goldAmount,
         walletAddress: req.body.walletAddress,
-        xrpBalance: xrpBalance,  // Added XRP balance
-        dkpBalance: dkpBalance   // Added DKP balance
+        xrpBalance: xrpBalance,
+        dkpBalance: dkpBalance
       }
     }   
-    
     res.status(200).json(responseObj);
   console.log(responseObj);
 } else {
@@ -98,9 +67,9 @@ app.post('/dkpsend', async (req, res, next) => {
     details: {
         userId: userId,
         goldAmount: goldAmount,
-        walletAddress: req.body.walletAddress,
-        xrpBalance: xrpBalance,  // Added XRP balance
-        dkpBalance: dkpBalance   // Added DKP balance
+        walletAddress: req.body.walletAddress
+        //xrpBalance: xrpBalance,  // Added XRP balance
+        //dkpBalance: dkpBalance   // Added DKP balance
     }
   };
   res.status(200).json(responseObj);
@@ -109,80 +78,7 @@ app.post('/dkpsend', async (req, res, next) => {
 }
 client.disconnect()
 });
-app.post('/tokenpurchase', async (req, res, next) => {
-  //this assumes the json object coming in is called wallet
-  var wallet = req.get(req.body.wallet);
-  console.log(req.body.wallet);
-  //no longer in the xumm world. we doing straight comms to xrpl
-  const client = new xrpl.Client("wss://xrplcluster.com")
-  await client.connect()
-  console.log('We are listening')
-  //this is rHB5rfSutbJX6NByXhH7ggTb93M7Jw7jCe wallet.
-  const dkpWallet = xrpl.Wallet.fromSeed(process.env.SENDER_SEED);
-  const currency_code = "DKP"
-  // Send token ----------------------------------------------------------------
-  const issue_quantity = "5"
-  const send_token_tx = {
-    "TransactionType": "Payment",
-    "Account": process.env.SENDER_PUBLIC,
-    "Amount": "10000",
-    //"Amount": {
-    //  "currency": currency_code,
-    //  "value": issue_quantity,
-    //  "issuer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
-    //},
-    "Destination": (dkpWallet)
-  }
-  const pay_prepared = await client.autofill(send_token_tx)
-  const pay_signed = dkpWallet.sign(pay_prepared)
-  const pay_result = await client.submitAndWait(pay_signed.tx_blob)
-  console.log(pay_result);
-  if (pay_result.result.meta.TransactionResult == "tesSUCCESS") {
-    console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
-} else {
-    throw `Error sending transaction: ${pay_result.result.meta.TransactionResult}`
 
-}
-client.disconnect()
-}
-  
-);
-app.post('/createAccountWalletSignIn', async (req, res, next) => {
-  //this assumes the json object coming in is called wallet
-  var wallet = req.get(req.body.wallet);
-  console.log(req.body.wallet);
-  //no longer in the xumm world. we doing straight comms to xrpl
-  const client = new xrpl.Client("wss://xrplcluster.com")
-  await client.connect()
-  console.log('We are listening')
-  //this is rHB5rfSutbJX6NByXhH7ggTb93M7Jw7jCe wallet.
-  const currency_code = "DKP"
-  // Send token ----------------------------------------------------------------
-  const issue_quantity = "5"
-  const send_token_tx = {
-    "TransactionType": "SignIn",
-    "Account": req.body.wallet,
-    "Amount": {
-      "currency": currency_code,
-      "value": issue_quantity,
-      "issuer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
-    },
-    "Destination": (dkpWallet)
-  }
-  const pay_prepared = await client.autofill(send_token_tx)
-  const pay_signed = dkpWallet.sign(pay_prepared)
-  const pay_result = await client.submitAndWait(pay_signed.tx_blob)
-  console.log(pay_result);
-  if (pay_result.result.meta.TransactionResult == "tesSUCCESS") {
-    console.log(`Transaction succeeded: https://mainnet.xrpl.org/transactions/${pay_signed.hash}`)
-} else {
-    throw `Error sending transaction: ${pay_result.result.meta.TransactionResult}`
-
-}
-client.disconnect()
-}
-  
-);
 app.post('/balance', async (req, res, next) => {
   //this assumes the json object coming in is called wallet
   var wallet = req.get(req.body.wallet);
