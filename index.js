@@ -121,31 +121,28 @@ let pendingPayloadIds = [];
 
 // XUMM webhook handling
 app.post('/xumm-webhook', async (req, res) => {
-  const payloadId = req.body.payloadId;
-  const timestamp = Date.now();
-  const isSigned = req.body.meta.signed;
-  const isResolved = req.body.meta.resolved;
-  const isExpired = req.body.meta.expired;
-  const customMetablob = req.body.customMeta.blob;
+  const timestamp = req.headers['x-xumm-request-timestamp'] || '';
+    const json = req.body;
 
-  // Add other fields here as needed
+    const hmac = crypto.createHmac('sha1', process.env.XUMM_PRIVATE.replace('-', ''))
+      .update(timestamp + JSON.stringify(json))
+      .digest('hex');
+
+    if (hmac !== req.headers['x-xumm-request-signature']) {
+      console.warn('Signature mismatch. Possible tampering detected.');
+      return res.status(401).send('Unauthorized');
+    }
+  const payloadId = req.body.meta.payload_uuidv4;
+  const verifying = await Verify.getOne(payloadId)
+  if(verifying){
+    const _timestamp = Date.now();
+    const isSigned = req.body.payloadResponse.signed;
+    const customMetablob = req.body.custom_meta.blob;
+    // You can push additional information to your pendingPayloadIds array if needed.
+    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
+    res.status(200).send("OK");
+  }
   
-  if (isSigned) {
-    // Logic for signed transactions
-  }
-
-  if (isResolved) {
-    // Logic for resolved transactions
-  }
-
-  if (isExpired) {
-    // Logic for expired transactions
-  }
-
-  // You can push additional information to your pendingPayloadIds array if needed.
-  pendingPayloadIds.push({ payloadId, timestamp, isSigned, isResolved, isExpired, customMetablob });
-
-  res.status(200).send("OK");
 });
 // Cleanup old entries every 5 minutes
 setInterval(() => {
@@ -156,13 +153,16 @@ setInterval(() => {
 // Unity server check endpoint
 app.get('/check-payload/:payloadId', (req, res) => {
   const { payloadId } = req.params;
+  if (!payload) {
+    return res.json(null);
+  }
   const xummDetailedResponse = {
     meta: {
       exists: true,
       uuid: payloadId,
       signed: payload.signed || false, // These are placeholders; replace with real data
-      submit: payload.submit || false,
-      resolved: payload.resolved || false,
+      submit: false,
+      resolved: true,
       expired: payload.expired || false,
     },
     custom_meta: {
