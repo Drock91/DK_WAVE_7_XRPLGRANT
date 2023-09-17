@@ -38,17 +38,15 @@ const release = () => {
 // Release 95 requests every minute
 setInterval(release, WINDOW_MS);
 
-app.post("/xummqueue", async (req, res, next) => {
+app.post('/xummqueue', (req, res) => {
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
-    // Process the request
-    await yourExistingCode(req, res);
+    // Your processing logic here
     res.status(200).send("Request processed");
   } else {
-    // Push into queue
-    pendingQueue.push(async () => {
+    pendingQueue.push(() => {
       currentRequests++;
-      await yourExistingCode(req, res);
+      // Your processing logic here
       res.status(200).send("Request processed");
     });
   }
