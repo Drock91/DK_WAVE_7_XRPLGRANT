@@ -133,6 +133,7 @@ app.post('/xumm-webhook', async (req, res) => {
       return res.status(401).send('Unauthorized');
     }
   console.log(req.body.payloadResponse + " this was our payloadResponse!")
+  console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
   const payloadId = req.body.payloadResponse.payload_uuidv4;
   if(!payloadId === null){
     console.log(req.body.payloadResponse + " this was our payloadResponse!")
@@ -148,6 +149,7 @@ app.post('/xumm-webhook', async (req, res) => {
     const isSigned = req.body.payloadResponse.signed;
     const customMetablob = req.body.custom_meta.blob;
     // You can push additional information to your pendingPayloadIds array if needed.
+    console.log("adding to pendingPayloads !! ************************ LOOK FOR THIS IN LOG")
     pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
   }
   
