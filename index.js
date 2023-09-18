@@ -132,6 +132,7 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
+  console.log(req.body.payloadResponse + " this was our payloadResponse!")
   const payloadId = req.body.payloadResponse.payload_uuidv4;
   if(!payloadId === null){
     console.log(req.body.payloadResponse + " this was our payloadResponse!")
