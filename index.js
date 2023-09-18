@@ -141,8 +141,13 @@ app.post('/xumm-webhook', async (req, res) => {
       const isSigned = req.body.payloadResponse.signed;
       const customMetablob = req.body.custom_meta.blob;
       // You can push additional information to your pendingPayloadIds array if needed.
-      pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
+      //pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
     }
+    const _timestamp = Date.now();
+    const isSigned = req.body.payloadResponse.signed;
+    const customMetablob = req.body.custom_meta.blob;
+    // You can push additional information to your pendingPayloadIds array if needed.
+    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
   }
   
   res.status(200).send("OK");
