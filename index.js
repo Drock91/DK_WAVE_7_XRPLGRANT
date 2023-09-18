@@ -1,4 +1,5 @@
 var express = require('express');
+const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 var router = express.Router();
@@ -15,6 +16,10 @@ const limiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10
 });
+const headers = {
+  'x-api-key': process.env.XUMM_PUBLIC,
+  'x-api-secret': process.env.XUMM_PRIVATE,
+}
 const Sdk = new XummSdk(process.env.XUMM_PUBLIC, process.env.XUMM_PRIVATE)
 app.use('/transmute', limiter);
 app.use('/register', limiter);
@@ -133,9 +138,9 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
-  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
-  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
-  console.log("This was our req headers:", JSON.stringify(req.body.response, null, 2));
+  console.log("This was our req body:", JSON.stringify(req.body, null, 2));
+  console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  
 
   //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
   //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
@@ -166,26 +171,21 @@ setInterval(() => {
   const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
   pendingPayloadIds = pendingPayloadIds.filter(item => item._timestamp > fiveMinutesAgo);
 }, 5 * 60 * 1000);
-const getTransactionPayload = async (payloadId) => {
+async function getPayloadInfo(payloadId) {
   try {
-    const payloadInfo = await Sdk.payload.getById(payloadId);
-
-    if (payloadInfo && payloadInfo.application_status) {
-      const { application_status } = payloadInfo;
-
-      if (application_status.signed) {
-        const publicAddress = payloadInfo.response.account;
-        console.log(`Transaction signed by: ${publicAddress}`);
-      }
+    const response = await axios.get(`https://xumm.app/api/v1/platform/payload/${payloadId}`, { headers });
+    if (response.status === 200) {
+      return response.data;
     } else {
-      console.log('Payload ID not found or invalid.');
+      return null;
     }
   } catch (error) {
-    console.error('An error occurred:', error);
+    console.error(error);
+    return null;
   }
 }
 // Unity server check endpoint
-app.get('/check-payload/:payloadId', (req, res) => {
+app.get('/check-payload/:payloadId', async(req, res) => {
   if (pendingPayloadIds.length > 0) {
     console.log("Contents of pendingPayloadIds array:");
     console.log(pendingPayloadIds);
@@ -204,12 +204,19 @@ app.get('/check-payload/:payloadId', (req, res) => {
 
     return res.json(null);
   }
-  const expired = false;
-  const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+  let expired = false;
+  let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
  if(payload._timestamp > fiveMinutesAgo) {
   expired = true;
  }
- const fullObject = getTransactionPayload(payload);
+ const payloadInfo = await getPayloadInfo(payloadId);
+  if (payloadInfo) {
+    console.log("Payload info:", payloadInfo);
+    console.log("This was our payloadInfo:", JSON.stringify(payloadInfo, null, 2));
+    
+  } else {
+    console.log("Could not retrieve payload info");
+  }
   const xummDetailedResponse = {
     meta: {
       exists: true,
@@ -223,9 +230,9 @@ app.get('/check-payload/:payloadId', (req, res) => {
      blob: payload.customMetablob // Fill this in from the stored data
     },
     response: {
-      hex: payload.hex || "", // These are placeholders; replace with real data
-      txid: payload.txid || "",
-      account: payload.account || ""
+      hex: payload.txid,
+      txid: payload.txid,
+      account: payload.account
     }
   };
 
