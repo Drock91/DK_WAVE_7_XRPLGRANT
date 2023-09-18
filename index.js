@@ -134,9 +134,9 @@ app.post('/xumm-webhook', async (req, res) => {
     }
   console.log(req.body.payloadResponse + " this was our payloadResponse!")
   console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
-  const payloadId = req.body.payload_uuidv4;
+  const payloadId = req.body.payloadResponse.payload_uuidv4;
   if(!payloadId === null){
-    console.log(req.body.payloadResponse + " this was our payloadResponse!")
+    console.log(req.body.payloadResponse.payload_uuidv4 + " this was our payloadResponse!")
     //const verifying = await Verify.getOne(payloadId)
     //if(verifying){
     //  console.log("we made it to verify from xumm hook")
@@ -145,10 +145,10 @@ app.post('/xumm-webhook', async (req, res) => {
     //}
     const _timestamp = Date.now();
     const isSigned = req.body.signed;
-    //const customMetablob = req.body.custom_meta.blob;
+    const customMetablob = req.body.custom_meta.blob;
     // You can push additional information to your pendingPayloadIds array if needed.
     console.log("adding to pendingPayloads !! ************************ LOOK FOR THIS IN LOG")
-    pendingPayloadIds.push({ payloadId, _timestamp, isSigned });
+    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
   }
   
   res.status(200).send("OK");
