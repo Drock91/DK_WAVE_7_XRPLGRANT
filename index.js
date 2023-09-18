@@ -121,6 +121,7 @@ let pendingPayloadIds = [];
 
 // XUMM webhook handling
 app.post('/xumm-webhook', async (req, res) => {
+  console.log("starting webhook code")
   const timestamp = req.headers['x-xumm-request-timestamp'] || '';
     const json = req.body;
 
