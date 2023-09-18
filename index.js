@@ -134,7 +134,11 @@ app.post('/xumm-webhook', async (req, res) => {
       return res.status(401).send('Unauthorized');
     }
   console.log(req.body.payloadResponse + " this was our payloadResponse!")
+  console.log(req.body.custom_meta + " this was our payloadResponse!")
+
   console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
+  console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
+
   const payloadId = req.body.payloadResponse.payload_uuidv4;
   if(!payloadId === null){
     console.log(req.body.payloadResponse.payload_uuidv4 + " this was our payloadResponse!")
