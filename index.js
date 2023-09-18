@@ -155,10 +155,22 @@ setInterval(() => {
 
 // Unity server check endpoint
 app.get('/check-payload/:payloadId', (req, res) => {
+  if (pendingPayloadIds.length > 0) {
+    console.log("Contents of pendingPayloadIds array:");
+    console.log(pendingPayloadIds);
+  } else {
+    console.log("The pendingPayloadIds array is empty.");
+    return res.json(null);
+  }
   const { payloadId } = req.params;
+  if(req.params === null){
+    return res.json(null);
+  }
   const payload = pendingPayloadIds.find(item => item.payloadId === payloadId);
 
   if (!payload) {
+    console.log("The payload not found!!");
+
     return res.json(null);
   }
   const xummDetailedResponse = {
