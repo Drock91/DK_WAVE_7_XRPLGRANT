@@ -31,29 +31,29 @@ let currentRequests = 0;
 const MAX_REQUESTS = 95;
 const WINDOW_MS = 60 * 1000; // 1 minute
 
-const release = () => {
-  const numToRelease = Math.min(pendingQueue.length, MAX_REQUESTS - currentRequests);
-  for (let i = 0; i < numToRelease; i++) {
-    const nextRequest = pendingQueue.shift();
-    nextRequest();
-  }
-  currentRequests = Math.max(0, currentRequests - MAX_REQUESTS);
+const resetRateLimit = () => {
+  currentRequests = 0;
 };
+setInterval(resetRateLimit, WINDOW_MS);
 
 // Release 95 requests every minute
-setInterval(release, WINDOW_MS);
 
 app.post('/xummqueue', (req, res) => {
+  const id = req.query.id;  // Extracting the ID from the URL query parameter
+  if (id === undefined) {
+    res.status(400).send("ID is required");
+    return;
+  }
+  if (!pendingQueue.some(item => item.id === id)) {
+    pendingQueue.push({ id, timestamp: Date.now() });
+  }
+  // Your processing logic here, you can now use the 'id'
+
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
-    // Your processing logic here
     res.status(200).send("Request processed");
   } else {
-    pendingQueue.push(() => {
-      currentRequests++;
-      // Your processing logic here
-      res.status(200).send("Request processed");
-    });
+    res.status(400).send("ID is required");
   }
 });
 app.post('/dkpsend', async (req, res, next) => {
@@ -186,6 +186,11 @@ async function getPayloadInfo(payloadId) {
 }
 // Unity server check endpoint
 app.get('/check-payload/:payloadId', async(req, res) => {
+  if (currentRequests < MAX_REQUESTS) {
+    currentRequests++;
+  } else {
+    res.status(400).send("ID is required");
+  }
   if (pendingPayloadIds.length > 0) {
     console.log("Contents of pendingPayloadIds array:");
     console.log(pendingPayloadIds);
@@ -209,6 +214,9 @@ app.get('/check-payload/:payloadId', async(req, res) => {
  if(payload._timestamp > fiveMinutesAgo) {
   expired = true;
  }
+ if(!payload.isSigned){
+  return res.json(null);
+ }
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
     console.log("Payload info:", payloadInfo.headers);
@@ -221,7 +229,7 @@ app.get('/check-payload/:payloadId', async(req, res) => {
     meta: {
       exists: true,
       uuid: payloadId,
-      signed: payload.isSigned || false, // These are placeholders; replace with real data
+      signed: payload.isSigned, // These are placeholders; replace with real data
       submit: false,
       resolved: true,
       expired: expired,
@@ -230,14 +238,22 @@ app.get('/check-payload/:payloadId', async(req, res) => {
      blob: payload.customMetablob // Fill this in from the stored data
     },
     response: {
-      hex: payload.txid,
+      hex: payloadInfo.data.response.hex,
       txid: payload.txid,
-      account: payload.account
+      account: payloadInfo.data.response.account
     }
   };
 
   res.json(xummDetailedResponse);
+  if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+    pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+
+  }
+  if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+    pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+  }
 });
+
 app.post('/balance', async (req, res, next) => {
   //this assumes the json object coming in is called wallet
   var wallet = req.get(req.body.wallet);
