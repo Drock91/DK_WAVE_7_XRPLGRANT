@@ -133,16 +133,19 @@ app.post('/xumm-webhook', async (req, res) => {
       return res.status(401).send('Unauthorized');
     }
   const payloadId = req.body.meta.payload_uuidv4;
-  const verifying = await Verify.getOne(payloadId)
-  if(verifying){
-    const _timestamp = Date.now();
-    const isSigned = req.body.payloadResponse.signed;
-    const customMetablob = req.body.custom_meta.blob;
-    // You can push additional information to your pendingPayloadIds array if needed.
-    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
-    res.status(200).send("OK");
+  if(!payloadId === null){
+    console.log(req.body.payloadResponse + " this was our payloadResponse!")
+    const verifying = await Verify.getOne(payloadId)
+    if(verifying){
+      const _timestamp = Date.now();
+      const isSigned = req.body.payloadResponse.signed;
+      const customMetablob = req.body.custom_meta.blob;
+      // You can push additional information to your pendingPayloadIds array if needed.
+      pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
+    }
   }
   
+  res.status(200).send("OK");
 });
 // Cleanup old entries every 5 minutes
 setInterval(() => {
