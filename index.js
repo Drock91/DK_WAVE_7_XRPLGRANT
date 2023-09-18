@@ -175,7 +175,7 @@ async function getPayloadInfo(payloadId) {
   try {
     const response = await axios.get(`https://xumm.app/api/v1/platform/payload/${payloadId}`, { headers });
     if (response.status === 200) {
-      return response.data;
+      return response;
     } else {
       return null;
     }
@@ -211,8 +211,8 @@ app.get('/check-payload/:payloadId', async(req, res) => {
  }
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
-    console.log("Payload info:", payloadInfo);
-    console.log("This was our payloadInfo:", JSON.stringify(payloadInfo, null, 2));
+    console.log("Payload info:", payloadInfo.headers);
+    console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.body, null, 2));
     
   } else {
     console.log("Could not retrieve payload info");
