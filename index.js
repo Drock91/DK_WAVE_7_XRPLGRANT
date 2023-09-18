@@ -156,6 +156,8 @@ setInterval(() => {
 // Unity server check endpoint
 app.get('/check-payload/:payloadId', (req, res) => {
   const { payloadId } = req.params;
+  const payload = pendingPayloadIds.find(item => item.payloadId === payloadId);
+
   if (!payload) {
     return res.json(null);
   }
