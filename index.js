@@ -212,7 +212,7 @@ app.get('/check-payload/:payloadId', async(req, res) => {
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
     console.log("Payload info:", payloadInfo.headers);
-    console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.body, null, 2));
+    console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
     
   } else {
     console.log("Could not retrieve payload info");
