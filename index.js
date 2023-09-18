@@ -133,9 +133,9 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
-  console.log("This was our req body:", JSON.stringify(req.body, null, 2));
-  console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
-
+  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
+  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  console.log("This was our req headers:", JSON.stringify(req.body.response, null, 2));
 
   //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
   //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
@@ -152,13 +152,11 @@ app.post('/xumm-webhook', async (req, res) => {
     const _timestamp = Date.now();
     const isSigned = req.body.payloadResponse.signed;
     const customMetablob = req.body.custom_meta.blob;
-    const account = req.body.custom_meta.blob;
-    const hex = req.body.custom_meta.blob;
-    const txid = req.body.txid;
+    const txid = req.body.payloadResponse.txid;
 
     // You can push additional information to your pendingPayloadIds array if needed.
     console.log("adding to pendingPayloads !! ************************ LOOK FOR THIS IN LOG")
-    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob, account, hex, txid});
+    pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob, txid});
   //}
   
   res.status(200).send("OK");
@@ -168,7 +166,24 @@ setInterval(() => {
   const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
   pendingPayloadIds = pendingPayloadIds.filter(item => item._timestamp > fiveMinutesAgo);
 }, 5 * 60 * 1000);
+const getTransactionPayload = async (payloadId) => {
+  try {
+    const payloadInfo = await Sdk.payload.getById(payloadId);
 
+    if (payloadInfo && payloadInfo.application_status) {
+      const { application_status } = payloadInfo;
+
+      if (application_status.signed) {
+        const publicAddress = payloadInfo.response.account;
+        console.log(`Transaction signed by: ${publicAddress}`);
+      }
+    } else {
+      console.log('Payload ID not found or invalid.');
+    }
+  } catch (error) {
+    console.error('An error occurred:', error);
+  }
+}
 // Unity server check endpoint
 app.get('/check-payload/:payloadId', (req, res) => {
   if (pendingPayloadIds.length > 0) {
@@ -194,6 +209,7 @@ app.get('/check-payload/:payloadId', (req, res) => {
  if(payload._timestamp > fiveMinutesAgo) {
   expired = true;
  }
+ const fullObject = getTransactionPayload(payload);
   const xummDetailedResponse = {
     meta: {
       exists: true,
