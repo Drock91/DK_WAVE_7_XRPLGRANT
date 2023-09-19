@@ -363,7 +363,7 @@ if (payload._timestamp <= fiveMinutesAgo) {
     }
 
 
-    if(walletAddress != payloadInfo.data.response.signer && walletAddress != "Undefined"){
+    if(walletAddress !== payloadInfo.data.response.signer && walletAddress !== "Undefined"){
       //we need to discard this payload its garbage they tried to trick us
       const xummDetailedResponse = {
         meta: {
