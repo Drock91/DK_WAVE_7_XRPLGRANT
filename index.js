@@ -391,6 +391,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
       if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
         pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
       }
+      console.log("BAD SIGNER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
       return res.json(xummDetailedResponse);
 
     }
@@ -429,6 +431,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
   } else {
     console.log("Could not retrieve payload info");
   }
+  console.log("GOOD TO GO SEND IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
   const xummDetailedResponse = {
     meta: {
       exists: true,
