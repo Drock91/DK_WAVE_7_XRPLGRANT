@@ -185,7 +185,8 @@ async function getPayloadInfo(payloadId) {
   }
 }
 // Unity server check endpoint
-app.get('/check-payload/:payloadId', async(req, res) => {
+//app.get('/check-payload/:payloadId', async(req, res) => {
+  app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
   } else {
@@ -198,7 +199,8 @@ app.get('/check-payload/:payloadId', async(req, res) => {
     console.log("The pendingPayloadIds array is empty.");
     return res.json(null);
   }
-  const { payloadId } = req.params;
+  const { payloadId, walletAddress } = req.params;
+  //const { payloadId } = req.params;
   if(req.params === null){
     return res.json(null);
   }
@@ -213,15 +215,160 @@ app.get('/check-payload/:payloadId', async(req, res) => {
   let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
  if(payload._timestamp > fiveMinutesAgo) {
   expired = true;
+  const xummDetailedResponse = {
+    meta: {
+      exists: true,
+      uuid: payloadId,
+      signed: payload.isSigned, // These are placeholders; replace with real data
+      submit: false,
+      resolved: true,
+      expired: expired,
+    },
+    custom_meta: {
+     blob: payload.customMetablob // Fill this in from the stored data
+    },
+    response: {
+      hex: "",
+      txid: "",
+      account: ""
+    }
+  };
+  if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+    pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+
+  }
+  if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+    pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+  }
+  return res.json(xummDetailedResponse);
  }
  if(!payload.isSigned){
-  return res.json(null);
+  const xummDetailedResponse = {
+    meta: {
+      exists: true,
+      uuid: payloadId,
+      signed: false, // These are placeholders; replace with real data
+      submit: false,
+      resolved: true,
+      expired: expired,
+    },
+    custom_meta: {
+     blob: payload.customMetablob // Fill this in from the stored data
+    },
+    response: {
+      hex: "",
+      txid: "",
+      account: ""
+    }
+  };
+  return res.json(xummDetailedResponse);
  }
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
+
     console.log("Payload info:", payloadInfo.headers);
     console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
+    const account = payloadInfo.data.response.account; // The account you're checking
+    const hasTrustline = await checkTrustline(account);
+    if (hasTrustline) {
+      console.log("The account has the required trustline.");
+      // Perform your logic here
+    } else {
+      console.log("The account does not have the required trustline.");
+      const xummDetailedResponse = {
+        meta: {
+          TrustLineNotSet: true,
+          exists: true,
+          uuid: payloadId,
+          signed: false, // These are placeholders; replace with real data
+          submit: false,
+          resolved: true,
+          expired: expired,
+        },
+        custom_meta: {
+         blob: payload.customMetablob // Fill this in from the stored data
+        },
+        response: {
+          hex: payloadInfo.data.response.hex,
+          txid: payload.txid,
+          account: payloadInfo.data.response.account
+        }
+      };
+      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
     
+      }
+      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      }
+      return res.json(xummDetailedResponse);
+      // Perform some other logic here
+    }
+
+
+    if(walletAddress != payloadInfo.data.response.signer && walletAddress != "Undefined"){
+      //we need to discard this payload its garbage they tried to trick us
+      const xummDetailedResponse = {
+        meta: {
+          wrongSigner: true,
+          exists: true,
+          uuid: payloadId,
+          signed: false, // These are placeholders; replace with real data
+          submit: false,
+          resolved: true,
+          expired: expired,
+        },
+        custom_meta: {
+         blob: payload.customMetablob // Fill this in from the stored data
+        },
+        response: {
+          hex: payloadInfo.data.response.hex,
+          txid: payload.txid,
+          account: payloadInfo.data.response.account
+        }
+      };
+      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+    
+      }
+      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      }
+      return res.json(xummDetailedResponse);
+
+    }
+    /*
+    if(payloadInfo.data.payload.request_json.TransactionType === "TrustSet" && walletAddress === "Undefined"){
+      //we need to discard this payload its garbage they tried to trick us
+      const xummDetailedResponse = {
+        meta: {
+          exists: true,
+          uuid: payloadId,
+          signed: false, // These are placeholders; replace with real data
+          submit: false,
+          resolved: true,
+          expired: expired,
+        },
+        custom_meta: {
+         blob: payload.customMetablob // Fill this in from the stored data
+        },
+        response: {
+          hex: payloadInfo.data.response.hex,
+          txid: payload.txid,
+          account: payloadInfo.data.response.account
+        }
+      };
+      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+    
+      }
+      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      }
+      return res.json(xummDetailedResponse);
+
+    }
+  */
   } else {
     console.log("Could not retrieve payload info");
   }
@@ -253,7 +400,29 @@ app.get('/check-payload/:payloadId', async(req, res) => {
     pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
   }
 });
+async function checkTrustline(account) {
+  // Connect to XRPL
+  const client = new xrpl.Client('wss://xrplcluster.com')
+  await client.connect()
 
+  // Fetch account lines (trustlines)
+  const accountLines = await client.request({
+    command: 'account_lines',
+    account: account,
+  })
+
+  await client.disconnect()
+
+  // Check if the account has the specified trustline
+  const trustlines = accountLines.result.lines || []
+  for (const line of trustlines) {
+    if (line.currency === "DKP" && line.account === "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J") {
+      return true // Trustline found
+    }
+  }
+
+  return false // Trustline not found
+}
 app.post('/balance', async (req, res, next) => {
   //this assumes the json object coming in is called wallet
   var wallet = req.get(req.body.wallet);
