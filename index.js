@@ -185,7 +185,59 @@ async function getPayloadInfo(payloadId) {
   }
 }
 // Unity server check endpoint
-//app.get('/check-payload/:payloadId', async(req, res) => {
+app.get('/GetMarketPrice', async (req, res) => {
+  const client = new xrpl.Client('wss://xrplcluster.com');
+  await client.connect();
+
+  const orderBook = await client.request({
+    command: 'book_offers',
+    taker_pays: {
+      currency: 'XRP'
+    },
+    taker_gets: {
+      currency: 'DKP',
+      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J' // Replace with your DKP issuer address
+    },
+    limit: 100
+  });
+
+  await client.disconnect();
+
+  const bestMarketPrice = calculateBestMarketPrice(orderBook.result.offers, 50000);
+
+  const xummDetailedResponse = {
+    meta: {
+      price: bestMarketPrice,
+    }
+  };
+  res.json(xummDetailedResponse);
+});
+
+function calculateBestMarketPrice(offers, targetAmount) {
+  let remainingDKP = targetAmount;
+  let totalXRP = 0;
+
+  for (const offer of offers) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    const rate = parseFloat(offer.quality);
+
+    if (remainingDKP <= 0) break;
+
+    const buyAmount = Math.min(availableDKP, remainingDKP);
+    const costInXRP = buyAmount * rate;
+
+    remainingDKP -= buyAmount;
+    totalXRP += costInXRP;
+  }
+
+  if (remainingDKP > 0) {
+    console.log('Not enough DKP offers to fulfill the order.');
+    return null;
+  }
+  
+  return (totalXRP / targetAmount).toString();
+}
+
   app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
