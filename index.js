@@ -264,8 +264,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
     return res.json(null);
   }
   let expired = false;
-  let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
- if(payload._timestamp > fiveMinutesAgo) {
+  console.log("Current Time:", Date.now());
+console.log("Payload Timestamp:", payload._timestamp);
+
+let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+console.log("Five Minutes Ago:", fiveMinutesAgo);
+
+if (payload._timestamp > fiveMinutesAgo) {
   expired = true;
   const xummDetailedResponse = {
     meta: {
