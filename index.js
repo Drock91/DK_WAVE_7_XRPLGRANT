@@ -138,8 +138,8 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
-  console.log("This was our req body:", JSON.stringify(req.body, null, 2));
-  console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
+  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
   
 
   //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
@@ -264,11 +264,11 @@ function calculateBestMarketPrice(offers, targetAmount) {
     return res.json(null);
   }
   let expired = false;
-  console.log("Current Time:", Date.now());
-console.log("Payload Timestamp:", payload._timestamp);
+//  console.log("Current Time:", Date.now());
+//console.log("Payload Timestamp:", payload._timestamp);
 
 let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-console.log("Five Minutes Ago:", fiveMinutesAgo);
+//console.log("Five Minutes Ago:", fiveMinutesAgo);
 
 if (payload._timestamp <= fiveMinutesAgo) {
   expired = true;
@@ -323,7 +323,7 @@ if (payload._timestamp <= fiveMinutesAgo) {
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
 
-    console.log("Payload info:", payloadInfo.headers);
+    //console.log("Payload info:", payloadInfo.headers);
     console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
     const account = payloadInfo.data.response.account; // The account you're checking
     const hasTrustline = await checkTrustline(account);
