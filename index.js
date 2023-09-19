@@ -138,8 +138,9 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
-  console.log("This was our req body:", JSON.stringify(req.body, null, 2));
-  console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
+  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  
 
   //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
   //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
@@ -325,7 +326,9 @@ if (payload._timestamp <= fiveMinutesAgo) {
     //console.log("Payload info:", payloadInfo.headers);
     console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
     const account = payloadInfo.data.response.account; // The account you're checking
-    const hasTrustline = await checkTrustline(account);
+    const payloadType = payloadInfo.data.payload.tx_type;
+    if(payloadType !== "TrustSet"){
+      const hasTrustline = await checkTrustline(account);
     if (hasTrustline) {
       console.log("The account has the required trustline.");
       // Perform your logic here
@@ -360,6 +363,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
       return res.json(xummDetailedResponse);
       // Perform some other logic here
     }
+    }
+    
 
 
     if(walletAddress !== payloadInfo.data.response.signer && walletAddress !== "Undefined"){
