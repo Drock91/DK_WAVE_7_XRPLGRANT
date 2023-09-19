@@ -280,9 +280,9 @@ function calculateBestMarketPrice(offers, targetAmount) {
      blob: payload.customMetablob // Fill this in from the stored data
     },
     response: {
-      hex: "",
-      txid: "",
-      account: ""
+      hex: "timeStampExpired",
+      txid: "NoTx",
+      account: "NoAccount"
     }
   };
   if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
