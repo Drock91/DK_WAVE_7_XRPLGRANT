@@ -207,12 +207,49 @@ app.get('/GetMarketPrice', async (req, res) => {
   console.log(bestMarketPrice + " was our best market price");
   const xummDetailedResponse = {
     meta: {
-      price: bestMarketPrice,
+      bestMarketPrice: bestMarketPrice,
     }
   };
   res.json(xummDetailedResponse);
 });
+function calculateBestMarketPrice(offers, targetAmount) {
+  let remainingDKP = targetAmount;
+  let totalXRP = 0;
 
+  console.log("Initial target amount of DKP:", targetAmount);
+
+  for (const [index, offer] of offers.entries()) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    const rate = parseFloat(offer.quality);
+
+    console.log(`Offer ${index + 1}: Available DKP: ${availableDKP}, Rate: ${rate}`);
+
+    if (remainingDKP <= 0) {
+      console.log("Target amount reached, breaking loop.");
+      break;
+    }
+
+    const buyAmount = Math.min(availableDKP, remainingDKP);
+    const costInXRP = buyAmount * rate;
+
+    console.log(`Buying amount: ${buyAmount}, Cost in XRP: ${costInXRP}`);
+
+    remainingDKP -= buyAmount;
+    totalXRP += costInXRP;
+
+    console.log(`Remaining DKP after this offer: ${remainingDKP}, Total XRP so far: ${totalXRP}`);
+  }
+
+  if (remainingDKP > 0) {
+    console.log('Not enough DKP offers to fulfill the order.');
+    return null;
+  }
+
+  console.log("Final best market price:", (totalXRP / targetAmount).toString());
+  
+  return (totalXRP / targetAmount).toString();
+}
+/*
 function calculateBestMarketPrice(offers, targetAmount) {
   let remainingDKP = targetAmount;
   let totalXRP = 0;
@@ -237,7 +274,7 @@ function calculateBestMarketPrice(offers, targetAmount) {
   
   return (totalXRP / targetAmount).toString();
 }
-
+*/
   app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
