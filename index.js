@@ -338,41 +338,32 @@ function calculateBestMarketPrice(offers, targetAmount) {
     return res.json(null);
   }
   const payload = pendingPayloadIds.find(item => item.payloadId === payloadId);
-
   if (!payload) {
     console.log("The payload not found!!");
 
     return res.json(null);
   }
   let expired = false;
-//  console.log("Current Time:", Date.now());
-//console.log("Payload Timestamp:", payload._timestamp);
-
-let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-//console.log("Five Minutes Ago:", fiveMinutesAgo);
-
-
-const requiredDkpAmount = 50000; // set the required amount here
- const payloadInfo = await getPayloadInfo(payloadId);
+  let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+  const requiredDkpAmount = 50000; // set the required amount here
+  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
     
     //console.log("Payload info:", payloadInfo.headers);
     console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
-    const account = payloadInfo.data.response.account; // The account you're checking
     const payloadType = payloadInfo.data.payload.tx_type;
     let addressToUse = null;
-
     // Check if 'walletAddress' is not null, not empty, and not "Undefined"
     if (walletAddress && walletAddress !== "Undefined") {
       addressToUse = walletAddress;
     }
-    
     // Check if 'payloadInfo.data.response.account' is not null and not empty
     if (payloadInfo && payloadInfo.data && payloadInfo.data.response && payloadInfo.data.response.account) {
       addressToUse = payloadInfo.data.response.account;
     }
+    //if not a trustset we can check this, if it is a first call for registration there will be no trustline check unfortunately so if its a decline send them back to start
     if(payloadType !== "TrustSet"){
-      const hasTrustline = await checkTrustline(account);
+      const hasTrustline = await checkTrustline(addressToUse);
     if (hasTrustline) {
      
       //walletAddress  AND payloadInfo.data.response.account are our two choices
@@ -505,7 +496,7 @@ const requiredDkpAmount = 50000; // set the required amount here
       
         return res.json(xummDetailedResponse);
        }
-      if(!payload.isSigned){
+      if(!payload.isSigned && addressToUse !== null){
         const xummDetailedResponse = {
           meta: {
             TrustLineNotSet: true,
@@ -526,6 +517,28 @@ const requiredDkpAmount = 50000; // set the required amount here
           }
         };
         console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED and no trustline !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+       } else {
+        const xummDetailedResponse = {
+          meta: {
+            exists: true,
+            uuid: payloadId,
+            signed: false, // These are placeholders; replace with real data
+            submit: false,
+            resolved: false,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: payloadInfo.data.response.hex,
+            txid: payload.txid,
+            account: payloadInfo.data.response.account
+          }
+        };
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED sending back to the registration page !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
        }
