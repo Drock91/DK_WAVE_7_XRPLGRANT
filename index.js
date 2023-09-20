@@ -184,7 +184,8 @@ async function getPayloadInfo(payloadId) {
     return null;
   }
 }
-app.get('/GetMarketPrice', async (req, res) => {
+app.post('/GetMarketPrice', async (req, res) => {
+  const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
   const client = new xrpl.Client('wss://xrplcluster.com');
   await client.connect();
   const orderBook = await client.request({
@@ -206,7 +207,7 @@ app.get('/GetMarketPrice', async (req, res) => {
   for (const offer of orderBook.result.offers) {
     const availableDKP = parseFloat(offer.TakerGets.value);
     aggregateLiquidity += availableDKP;
-    if (aggregateLiquidity >= 50000) {
+    if (aggregateLiquidity >= desiredAmount) {
       bestRate = parseFloat(offer.quality);
       break;
     }
@@ -216,7 +217,7 @@ app.get('/GetMarketPrice', async (req, res) => {
     res.json({ meta: { error: 'Not enough liquidity' } });
     return;
   }
-  const bestMarketPrice = ((bestRate / 1000000 )* 50000).toString();
+  const bestMarketPrice = ((bestRate / 1000000 )* desiredAmount).toString();
   console.log(bestMarketPrice + " was our best market price");
   const xummDetailedResponse = {
     meta: {
@@ -351,17 +352,66 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
 //console.log("Five Minutes Ago:", fiveMinutesAgo);
 
 
-
+const requiredDkpAmount = 50000; // set the required amount here
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
-
+    
     //console.log("Payload info:", payloadInfo.headers);
     console.log("This was our payloadInfo:", JSON.stringify(payloadInfo.data, null, 2));
     const account = payloadInfo.data.response.account; // The account you're checking
     const payloadType = payloadInfo.data.payload.tx_type;
+    let addressToUse = null;
+
+    // Check if 'walletAddress' is not null, not empty, and not "Undefined"
+    if (walletAddress && walletAddress !== "Undefined") {
+      addressToUse = walletAddress;
+    }
+    
+    // Check if 'payloadInfo.data.response.account' is not null and not empty
+    if (payloadInfo && payloadInfo.data && payloadInfo.data.response && payloadInfo.data.response.account) {
+      addressToUse = payloadInfo.data.response.account;
+    }
     if(payloadType !== "TrustSet"){
       const hasTrustline = await checkTrustline(account);
     if (hasTrustline) {
+     
+      //walletAddress  AND payloadInfo.data.response.account are our two choices
+      let dkpAmount = 0;
+      const client = new xrpl.Client('wss://xrplcluster.com');
+      await client.connect();
+      const balances = await client.getBalances(addressToUse);
+      for (const balance of balances) {
+        if (balance.currency === 'DKP') {
+          dkpAmount = parseFloat(balance.value);
+        }
+      }
+      await client.disconnect()
+      if(dkpAmount < requiredDkpAmount){
+        const dkprequired = requiredDkpAmount - dkpAmount;
+        const xummDetailedResponse = {
+          meta: {
+            NotEnoughLiquidityButHasTrustLine: true,
+            RequiredAmount: dkprequired.toString(),
+            exists: true,
+            uuid: payloadId,
+            signed: false, // These are placeholders; replace with real data
+            submit: false,
+            resolved: false,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: payloadInfo.data.response.hex,
+            txid: payload.txid,
+            account: payloadInfo.data.response.account
+          }
+        };
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+      }
       if (payload._timestamp <= fiveMinutesAgo) {
         expired = true;
         const xummDetailedResponse = {
@@ -605,7 +655,6 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
     console.log("Could not retrieve payload info");
   }
   console.log("GOOD TO GO SEND IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
   const xummDetailedResponse = {
     meta: {
       exists: true,
