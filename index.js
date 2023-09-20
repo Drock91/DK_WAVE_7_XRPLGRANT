@@ -369,16 +369,18 @@ function calculateBestMarketPrice(offers, targetAmount) {
       //walletAddress  AND payloadInfo.data.response.account are our two choices
       let dkpAmount = 0;
       const client = new xrpl.Client('wss://xrplcluster.com');
-      await client.connect();
-      console.log("we are on the xrpl now getting balance");
-      const balances = await client.getBalances(addressToUse);
-      for (const balance of balances) {
-        if (balance.currency === 'DKP') {
-          dkpAmount = parseFloat(balance.value);
+
+      if(addressToUse !== null){
+        await client.connect();
+        console.log("we are on the xrpl now getting balance");
+        const balances = await client.getBalances(addressToUse);
+        await client.disconnect()
+        for (const balance of balances) {
+          if (balance.currency === 'DKP') {
+            dkpAmount = parseFloat(balance.value);
+          }
         }
-      }
-      await client.disconnect()
-      console.log("Balance for dkp is: " + dkpAmount);
+        console.log("Balance for dkp is: " + dkpAmount);
       if(dkpAmount < requiredDkpAmount){
         const dkprequired = requiredDkpAmount - dkpAmount;
         const xummDetailedResponse = {
@@ -405,6 +407,9 @@ function calculateBestMarketPrice(offers, targetAmount) {
       
         return res.json(xummDetailedResponse);
       }
+      }
+      
+      
       if (payload._timestamp <= fiveMinutesAgo) {
         expired = true;
         const xummDetailedResponse = {
