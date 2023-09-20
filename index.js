@@ -187,7 +187,6 @@ async function getPayloadInfo(payloadId) {
 app.get('/GetMarketPrice', async (req, res) => {
   const client = new xrpl.Client('wss://xrplcluster.com');
   await client.connect();
-
   const orderBook = await client.request({
     command: 'book_offers',
     taker_pays: {
@@ -199,40 +198,31 @@ app.get('/GetMarketPrice', async (req, res) => {
     },
     limit: 1000
   });
-
   await client.disconnect();
-
   // Sort the offers by rate in ascending order
   orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
-
   let aggregateLiquidity = 0;
   let bestRate = 0;
-
   for (const offer of orderBook.result.offers) {
     const availableDKP = parseFloat(offer.TakerGets.value);
     aggregateLiquidity += availableDKP;
-
     if (aggregateLiquidity >= 50000) {
       bestRate = parseFloat(offer.quality);
       break;
     }
   }
-
   if (bestRate === 0) {
     console.log('Not enough liquidity to fulfill 50,000 DKP.');
     res.json({ meta: { error: 'Not enough liquidity' } });
     return;
   }
-
   const bestMarketPrice = ((bestRate / 1000000 )* 50000).toString();
   console.log(bestMarketPrice + " was our best market price");
-
   const xummDetailedResponse = {
     meta: {
       bestMarketPrice: bestMarketPrice,
     }
   };
-
   res.json(xummDetailedResponse);
 });
 /*
@@ -386,6 +376,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
   if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
     pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
   }
+  console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+
   return res.json(xummDetailedResponse);
  }
  if(!payload.isSigned){
@@ -407,6 +399,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
       account: ""
     }
   };
+  console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+
   return res.json(xummDetailedResponse);
  }
  const payloadInfo = await getPayloadInfo(payloadId);
@@ -449,6 +443,8 @@ if (payload._timestamp <= fiveMinutesAgo) {
       if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
         pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
       }
+      console.log("Sending xummDetailedResponse: NO TRUSTLINE ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+
       return res.json(xummDetailedResponse);
       // Perform some other logic here
     }
@@ -485,6 +481,7 @@ if (payload._timestamp <= fiveMinutesAgo) {
         pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
       }
       console.log("BAD SIGNER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      console.log("Sending xummDetailedResponse: WRONG SIGNER ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
 
       return res.json(xummDetailedResponse);
 
@@ -544,6 +541,7 @@ if (payload._timestamp <= fiveMinutesAgo) {
       account: payloadInfo.data.response.account
     }
   };
+  console.log("Sending xummDetailedResponse: GOOD RESPOSNE THIS WAS CORRECT!! ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
 
   res.json(xummDetailedResponse);
   if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
