@@ -350,60 +350,8 @@ function calculateBestMarketPrice(offers, targetAmount) {
 let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
 //console.log("Five Minutes Ago:", fiveMinutesAgo);
 
-if (payload._timestamp <= fiveMinutesAgo) {
-  expired = true;
-  const xummDetailedResponse = {
-    meta: {
-      exists: true,
-      uuid: payloadId,
-      signed: payload.isSigned, // These are placeholders; replace with real data
-      submit: false,
-      resolved: true,
-      expired: expired,
-    },
-    custom_meta: {
-     blob: payload.customMetablob // Fill this in from the stored data
-    },
-    response: {
-      hex: "timeStampExpired",
-      txid: "NoTx",
-      account: "NoAccount"
-    }
-  };
-  if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-    pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
 
-  }
-  if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-    pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-  }
-  console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
 
-  return res.json(xummDetailedResponse);
- }
- if(!payload.isSigned){
-  const xummDetailedResponse = {
-    meta: {
-      exists: true,
-      uuid: payloadId,
-      signed: false, // These are placeholders; replace with real data
-      submit: false,
-      resolved: true,
-      expired: expired,
-    },
-    custom_meta: {
-     blob: payload.customMetablob // Fill this in from the stored data
-    },
-    response: {
-      hex: "",
-      txid: "",
-      account: ""
-    }
-  };
-  console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-
-  return res.json(xummDetailedResponse);
- }
  const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
 
@@ -414,9 +362,121 @@ if (payload._timestamp <= fiveMinutesAgo) {
     if(payloadType !== "TrustSet"){
       const hasTrustline = await checkTrustline(account);
     if (hasTrustline) {
+      if (payload._timestamp <= fiveMinutesAgo) {
+        expired = true;
+        const xummDetailedResponse = {
+          meta: {
+            TrustLineNotSet: false,
+            exists: true,
+            uuid: payloadId,
+            signed: payload.isSigned, // These are placeholders; replace with real data
+            submit: false,
+            resolved: true,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: "timeStampExpired",
+            txid: "NoTx",
+            account: "NoAccount"
+          }
+        };
+        if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+          pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+      
+        }
+        if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+          pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+        }
+        console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+       }
+      if(!payload.isSigned){
+        const xummDetailedResponse = {
+          meta: {
+            TrustLineNotSet: false,
+            exists: true,
+            uuid: payloadId,
+            signed: false, // These are placeholders; replace with real data
+            submit: false,
+            resolved: true,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: payloadInfo.data.response.hex,
+            txid: payload.txid,
+            account: payloadInfo.data.response.account
+          }
+        };
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+       }
       console.log("The account has the required trustline.");
       // Perform your logic here
     } else {
+      if (payload._timestamp <= fiveMinutesAgo) {
+        expired = true;
+        const xummDetailedResponse = {
+          meta: {
+            TrustLineNotSet: true,
+            exists: true,
+            uuid: payloadId,
+            signed: payload.isSigned, // These are placeholders; replace with real data
+            submit: false,
+            resolved: true,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: "timeStampExpired",
+            txid: "NoTx",
+            account: "NoAccount"
+          }
+        };
+        if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+          pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+      
+        }
+        if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+          pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+        }
+        console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+       }
+      if(!payload.isSigned){
+        const xummDetailedResponse = {
+          meta: {
+            TrustLineNotSet: true,
+            exists: true,
+            uuid: payloadId,
+            signed: false, // These are placeholders; replace with real data
+            submit: false,
+            resolved: true,
+            expired: expired,
+          },
+          custom_meta: {
+           blob: payload.customMetablob // Fill this in from the stored data
+          },
+          response: {
+            hex: payloadInfo.data.response.hex,
+            txid: payload.txid,
+            account: payloadInfo.data.response.account
+          }
+        };
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED and no trustline!", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      
+        return res.json(xummDetailedResponse);
+       }
       console.log("The account does not have the required trustline.");
       const xummDetailedResponse = {
         meta: {
@@ -451,7 +511,29 @@ if (payload._timestamp <= fiveMinutesAgo) {
     }
     }
     
-
+    if(!payload.isSigned && payloadType === "TrustSet"){
+      const xummDetailedResponse = {
+        meta: {
+          exists: true,
+          uuid: payloadId,
+          signed: false, // These are placeholders; replace with real data
+          submit: false,
+          resolved: true,
+          expired: expired,
+        },
+        custom_meta: {
+         blob: payload.customMetablob // Fill this in from the stored data
+        },
+        response: {
+          hex: "",
+          txid: "",
+          account: ""
+        }
+      };
+      console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+    
+      return res.json(xummDetailedResponse);
+     }
 
     if(walletAddress !== payloadInfo.data.response.signer && walletAddress !== "Undefined"){
       //we need to discard this payload its garbage they tried to trick us
