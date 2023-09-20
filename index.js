@@ -390,7 +390,7 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
         if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
           pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
         }
-        console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+        console.log("Sending xummDetailedResponse: EXPIRED TX w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
        }
@@ -414,7 +414,7 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
             account: payloadInfo.data.response.account
           }
         };
-        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
        }
@@ -449,7 +449,7 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
         if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
           pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
         }
-        console.log("Sending xummDetailedResponse: EXPIRED TX ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+        console.log("Sending xummDetailedResponse: EXPIRED TX no trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
        }
@@ -525,12 +525,12 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
          blob: payload.customMetablob // Fill this in from the stored data
         },
         response: {
-          hex: "",
-          txid: "",
-          account: ""
+          hex: payloadInfo.data.response.hex,
+          txid: payload.txid,
+          account: payloadInfo.data.response.account
         }
       };
-      console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+      console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED no trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
     
       return res.json(xummDetailedResponse);
      }
