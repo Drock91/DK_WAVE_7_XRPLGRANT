@@ -499,6 +499,7 @@ function calculateBestMarketPrice(offers, targetAmount) {
       if(!payload.isSigned && addressToUse !== null){
         const xummDetailedResponse = {
           meta: {
+            NoAddressSendBackToMain: false,
             TrustLineNotSet: true,
             exists: true,
             uuid: payloadId,
@@ -520,27 +521,31 @@ function calculateBestMarketPrice(offers, targetAmount) {
       
         return res.json(xummDetailedResponse);
        } else {
-        const xummDetailedResponse = {
-          meta: {
-            exists: true,
-            uuid: payloadId,
-            signed: false, // These are placeholders; replace with real data
-            submit: false,
-            resolved: false,
-            expired: expired,
-          },
-          custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
-          },
-          response: {
-            hex: payloadInfo.data.response.hex,
-            txid: payload.txid,
-            account: payloadInfo.data.response.account
-          }
-        };
-        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED sending back to the registration page !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-      
-        return res.json(xummDetailedResponse);
+        if(!payload.isSigned && addressToUse === null){
+          const xummDetailedResponse = {
+            meta: {
+              NoAddressSendBackToMain: true,
+              exists: true,
+              uuid: payloadId,
+              signed: false, // These are placeholders; replace with real data
+              submit: false,
+              resolved: false,
+              expired: expired,
+            },
+            custom_meta: {
+             blob: payload.customMetablob // Fill this in from the stored data
+            },
+            response: {
+              hex: payloadInfo.data.response.hex,
+              txid: payload.txid,
+              account: payloadInfo.data.response.account
+            }
+          };
+          console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED sending back to the registration page !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+        
+          return res.json(xummDetailedResponse);
+        }
+        
        }
       console.log("The account does not have the required trustline.");
       const xummDetailedResponse = {
