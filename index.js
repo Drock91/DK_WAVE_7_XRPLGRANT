@@ -473,7 +473,7 @@ let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
             account: payloadInfo.data.response.account
           }
         };
-        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED and no trustline!", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED and no trustline !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
        }
