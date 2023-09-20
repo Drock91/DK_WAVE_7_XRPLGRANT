@@ -379,6 +379,7 @@ const requiredDkpAmount = 50000; // set the required amount here
       let dkpAmount = 0;
       const client = new xrpl.Client('wss://xrplcluster.com');
       await client.connect();
+      console.log("we are on the xrpl now getting balance");
       const balances = await client.getBalances(addressToUse);
       for (const balance of balances) {
         if (balance.currency === 'DKP') {
@@ -386,6 +387,7 @@ const requiredDkpAmount = 50000; // set the required amount here
         }
       }
       await client.disconnect()
+      console.log("Balance for dkp is: " + dkpAmount);
       if(dkpAmount < requiredDkpAmount){
         const dkprequired = requiredDkpAmount - dkpAmount;
         const xummDetailedResponse = {
