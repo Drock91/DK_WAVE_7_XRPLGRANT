@@ -204,7 +204,7 @@ app.get('/GetMarketPrice', async (req, res) => {
   await client.disconnect();
 
   const bestMarketPrice = calculateBestMarketPrice(orderBook.result.offers, 50000);
-
+  console.log(bestMarketPrice + " was our best market price");
   const xummDetailedResponse = {
     meta: {
       price: bestMarketPrice,
