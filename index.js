@@ -217,7 +217,8 @@ function calculateBestMarketPrice(offers, targetAmount) {
   let totalXRP = 0;
 
   // Sort the offers by rate in ascending order
-  offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+  //offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+  offers.sort((a, b) => parseFloat(b.quality) - parseFloat(a.quality));
 
   for (const offer of offers) {
     const availableDKP = parseFloat(offer.TakerGets.value);
