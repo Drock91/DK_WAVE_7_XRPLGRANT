@@ -224,7 +224,7 @@ app.get('/GetMarketPrice', async (req, res) => {
     return;
   }
 
-  const bestMarketPrice = (bestRate * 50000).toString();
+  const bestMarketPrice = ((bestRate / 1000000 )* 50000).toString();
   console.log(bestMarketPrice + " was our best market price");
 
   const xummDetailedResponse = {
