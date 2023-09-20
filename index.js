@@ -333,6 +333,7 @@ function calculateBestMarketPrice(offers, targetAmount) {
   const { payloadId, walletAddress } = req.params;
   //const { payloadId } = req.params;
   if(req.params === null){
+    console.log("The params are empty.");
     return res.json(null);
   }
   const payload = pendingPayloadIds.find(item => item.payloadId === payloadId);
