@@ -184,6 +184,58 @@ async function getPayloadInfo(payloadId) {
     return null;
   }
 }
+app.get('/GetMarketPrice', async (req, res) => {
+  const client = new xrpl.Client('wss://xrplcluster.com');
+  await client.connect();
+
+  const orderBook = await client.request({
+    command: 'book_offers',
+    taker_pays: {
+      currency: 'XRP'
+    },
+    taker_gets: {
+      currency: 'DKP',
+      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J'
+    },
+    limit: 1000
+  });
+
+  await client.disconnect();
+
+  // Sort the offers by rate in ascending order
+  orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+
+  let aggregateLiquidity = 0;
+  let bestRate = 0;
+
+  for (const offer of orderBook.result.offers) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    aggregateLiquidity += availableDKP;
+
+    if (aggregateLiquidity >= 50000) {
+      bestRate = parseFloat(offer.quality);
+      break;
+    }
+  }
+
+  if (bestRate === 0) {
+    console.log('Not enough liquidity to fulfill 50,000 DKP.');
+    res.json({ meta: { error: 'Not enough liquidity' } });
+    return;
+  }
+
+  const bestMarketPrice = (bestRate * 50000).toString();
+  console.log(bestMarketPrice + " was our best market price");
+
+  const xummDetailedResponse = {
+    meta: {
+      bestMarketPrice: bestMarketPrice,
+    }
+  };
+
+  res.json(xummDetailedResponse);
+});
+/*
 // Unity server check endpoint
 app.get('/GetMarketPrice', async (req, res) => {
   const client = new xrpl.Client('wss://xrplcluster.com');
@@ -198,7 +250,7 @@ app.get('/GetMarketPrice', async (req, res) => {
       currency: 'DKP',
       issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J' // Replace with your DKP issuer address
     },
-    limit: 100
+    limit: 1000
   });
 
   await client.disconnect();
@@ -212,6 +264,7 @@ app.get('/GetMarketPrice', async (req, res) => {
   };
   res.json(xummDetailedResponse);
 });
+*/
 function calculateBestMarketPrice(offers, targetAmount) {
   let remainingDKP = targetAmount;
   let totalXRP = 0;
