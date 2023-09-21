@@ -367,8 +367,8 @@ function calculateBestMarketPrice(offers, targetAmount) {
     if (hasTrustline) {
      
       //walletAddress  AND payloadInfo.data.response.account are our two choices
-      let dkpAmount = 0;
-      const client = new xrpl.Client('wss://xrplcluster.com');
+      //let dkpAmount = 0;
+      //const client = new xrpl.Client('wss://xrplcluster.com');
 
      // if(addressToUse !== null){
      //   await client.connect();
@@ -409,7 +409,7 @@ function calculateBestMarketPrice(offers, targetAmount) {
      // }
      // }
      // 
-      
+        
       if (payload._timestamp <= fiveMinutesAgo) {
         expired = true;
         const xummDetailedResponse = {
