@@ -26,7 +26,7 @@ app.use('/register', limiter);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
-const pendingQueue = [];
+//let pendingQueue = [];
 let currentRequests = 0;
 const MAX_REQUESTS = 95;
 const WINDOW_MS = 60 * 1000; // 1 minute
@@ -44,9 +44,9 @@ app.post('/xummqueue', (req, res) => {
     res.status(400).send("ID is required");
     return;
   }
-  if (!pendingQueue.some(item => item.id === id)) {
-    pendingQueue.push({ id, timestamp: Date.now() });
-  }
+  //if (!pendingQueue.some(item => item.id === id)) {
+  //  pendingQueue.push({ id, timestamp: Date.now() });
+  //}
   // Your processing logic here, you can now use the 'id'
 
   if (currentRequests < MAX_REQUESTS) {
@@ -431,12 +431,11 @@ function calculateBestMarketPrice(offers, targetAmount) {
             account: "NoAccount"
           }
         };
-        if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-          pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-      
-        }
-        if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-          pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+        //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+        //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+        //}
+        if (!pendingPayloadIds.some(item => item === payload)) {
+          pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
         }
         console.log("Sending xummDetailedResponse: EXPIRED TX w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
@@ -490,13 +489,16 @@ function calculateBestMarketPrice(offers, targetAmount) {
             account: "NoAccount"
           }
         };
-        if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-          pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-      
+        if (!pendingPayloadIds.some(item => item === payload)) {
+          pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
         }
-        if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-          pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-        }
+        //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+        //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+      //
+        //}
+        //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+        //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+        //}
         console.log("Sending xummDetailedResponse: EXPIRED TX no trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
@@ -522,9 +524,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
             account: payloadInfo.data.response.account
           }
         };
+        
         console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED and no trustline !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-      
+        if (!pendingPayloadIds.some(item => item === payload)) {
+          pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
+        }
         return res.json(xummDetailedResponse);
+        
        } else {
         if(!payload.isSigned && addressToUse === null){
           const xummDetailedResponse = {
@@ -547,7 +553,9 @@ function calculateBestMarketPrice(offers, targetAmount) {
             }
           };
           console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED sending back to the registration page !", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-        
+          if (!pendingPayloadIds.some(item => item === payload)) {
+            pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
+          }
           return res.json(xummDetailedResponse);
         }
         
@@ -572,12 +580,14 @@ function calculateBestMarketPrice(offers, targetAmount) {
           account: payloadInfo.data.response.account
         }
       };
-      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-    
-      }
-      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+      //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+      //}
+      //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+      //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      //}
+      if (!pendingPayloadIds.some(item => item === payload)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
       }
       console.log("Sending xummDetailedResponse: NO TRUSTLINE ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
 
@@ -606,7 +616,9 @@ function calculateBestMarketPrice(offers, targetAmount) {
         }
       };
       console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED no trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-    
+      if (!pendingPayloadIds.some(item => item === payload)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
+      }
       return res.json(xummDetailedResponse);
      }
 
@@ -631,12 +643,15 @@ function calculateBestMarketPrice(offers, targetAmount) {
           account: payloadInfo.data.response.account
         }
       };
-      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-    
-      }
-      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+      //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+    //
+      //}
+      //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+      //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+      //}
+      if (!pendingPayloadIds.some(item => item === payload)) {
+        pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
       }
       console.log("BAD SIGNER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       console.log("Sending xummDetailedResponse: WRONG SIGNER ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
@@ -699,15 +714,16 @@ function calculateBestMarketPrice(offers, targetAmount) {
     }
   };
   console.log("Sending xummDetailedResponse: GOOD RESPOSNE THIS WAS CORRECT!! ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-
+  if (!pendingPayloadIds.some(item => item === payload)) {
+    pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
+  }
   res.json(xummDetailedResponse);
-  if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-    pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-
-  }
-  if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-    pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-  }
+  //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
+  //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
+  //}
+  //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
+  //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
+  //}
 });
 async function checkTrustline(account) {
   // Connect to XRPL
