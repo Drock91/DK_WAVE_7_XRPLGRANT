@@ -370,45 +370,45 @@ function calculateBestMarketPrice(offers, targetAmount) {
       let dkpAmount = 0;
       const client = new xrpl.Client('wss://xrplcluster.com');
 
-      if(addressToUse !== null){
-        await client.connect();
-        console.log("we are on the xrpl now getting balance");
-        const balances = await client.getBalances(addressToUse);
-        await client.disconnect()
-        for (const balance of balances) {
-          if (balance.currency === 'DKP') {
-            dkpAmount = parseFloat(balance.value);
-          }
-        }
-        console.log("Balance for dkp is: " + dkpAmount);
-      if(dkpAmount < requiredDkpAmount){
-        const dkprequired = requiredDkpAmount - dkpAmount;
-        const xummDetailedResponse = {
-          meta: {
-            NotEnoughLiquidityButHasTrustLine: true,
-            RequiredAmount: dkprequired.toString(),
-            exists: true,
-            uuid: payloadId,
-            signed: false, // These are placeholders; replace with real data
-            submit: false,
-            resolved: false,
-            expired: expired,
-          },
-          custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
-          },
-          response: {
-            hex: payloadInfo.data.response.hex,
-            txid: payload.txid,
-            account: payloadInfo.data.response.account
-          }
-        };
-        console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-      
-        return res.json(xummDetailedResponse);
-      }
-      }
-      
+     // if(addressToUse !== null){
+     //   await client.connect();
+     //   console.log("we are on the xrpl now getting balance");
+     //   const balances = await client.getBalances(addressToUse);
+     //   await client.disconnect()
+     //   for (const balance of balances) {
+     //     if (balance.currency === 'DKP') {
+     //       dkpAmount = parseFloat(balance.value);
+     //     }
+     //   }
+     //   console.log("Balance for dkp is: " + dkpAmount);
+     // if(dkpAmount < requiredDkpAmount){
+     //   const dkprequired = requiredDkpAmount - dkpAmount;
+     //   const xummDetailedResponse = {
+     //     meta: {
+     //       NotEnoughLiquidityButHasTrustLine: true,
+     //       RequiredAmount: dkprequired.toString(),
+     //       exists: true,
+     //       uuid: payloadId,
+     //       signed: payload.isSigned, // These are placeholders; replace with real data
+     //       submit: false,
+     //       resolved: false,
+     //       expired: expired,
+     //     },
+     //     custom_meta: {
+     //      blob: payload.customMetablob // Fill this in from the stored data
+     //     },
+     //     response: {
+     //       hex: payloadInfo.data.response.hex,
+     //       txid: payload.txid,
+     //       account: payloadInfo.data.response.account
+     //     }
+     //   };
+     //   console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
+     // 
+     //   return res.json(xummDetailedResponse);
+     // }
+     // }
+     // 
       
       if (payload._timestamp <= fiveMinutesAgo) {
         expired = true;
