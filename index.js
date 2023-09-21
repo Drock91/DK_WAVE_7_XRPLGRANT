@@ -56,6 +56,9 @@ app.post('/xummqueue', (req, res) => {
     res.status(400).send("ID is required");
   }
 });
+//api endpoint for transmuting gold to DKP 
+//Adding a security key system here that will provide game servers with a token on start up that is maintained here in heroku. 
+//The token will be how servers are able to unlock this endpoint to make transmutes happen for players
 app.post('/dkpsend', async (req, res, next) => {
   console.log('We are listening')
   console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
@@ -125,6 +128,7 @@ client.disconnect()
 let pendingPayloadIds = [];
 
 // XUMM webhook handling
+// this is our callback for when a player makes an input on their xumm app
 app.post('/xumm-webhook', async (req, res) => {
   console.log("starting webhook code")
   const timestamp = req.headers['x-xumm-request-timestamp'] || '';
@@ -140,11 +144,8 @@ app.post('/xumm-webhook', async (req, res) => {
     }
   //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
   //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
-  
-
   //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
   //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
-
   const payloadId = req.body.payloadResponse.payload_uuidv4;
   //if(!payloadId === null){
     console.log(req.body.payloadResponse.payload_uuidv4 + " this was our payloadResponse!")
@@ -184,6 +185,8 @@ async function getPayloadInfo(payloadId) {
     return null;
   }
 }
+//calculate the market price of cheapest dkp order to fill for our player
+// so they get the best price and the order has enough liquidity
 app.post('/GetMarketPrice', async (req, res) => {
   const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
   const client = new xrpl.Client('wss://xrplcluster.com');
@@ -226,36 +229,6 @@ app.post('/GetMarketPrice', async (req, res) => {
   };
   res.json(xummDetailedResponse);
 });
-/*
-// Unity server check endpoint
-app.get('/GetMarketPrice', async (req, res) => {
-  const client = new xrpl.Client('wss://xrplcluster.com');
-  await client.connect();
-
-  const orderBook = await client.request({
-    command: 'book_offers',
-    taker_pays: {
-      currency: 'XRP'
-    },
-    taker_gets: {
-      currency: 'DKP',
-      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J' // Replace with your DKP issuer address
-    },
-    limit: 1000
-  });
-
-  await client.disconnect();
-
-  const bestMarketPrice = calculateBestMarketPrice(orderBook.result.offers, 50000);
-  console.log(bestMarketPrice + " was our best market price");
-  const xummDetailedResponse = {
-    meta: {
-      bestMarketPrice: bestMarketPrice,
-    }
-  };
-  res.json(xummDetailedResponse);
-});
-*/
 function calculateBestMarketPrice(offers, targetAmount) {
   let remainingDKP = targetAmount;
   let totalXRP = 0;
@@ -292,32 +265,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
 
   return (bestMarketPrice * 50000).toString();
 }
-/*
-function calculateBestMarketPrice(offers, targetAmount) {
-  let remainingDKP = targetAmount;
-  let totalXRP = 0;
-
-  for (const offer of offers) {
-    const availableDKP = parseFloat(offer.TakerGets.value);
-    const rate = parseFloat(offer.quality);
-
-    if (remainingDKP <= 0) break;
-
-    const buyAmount = Math.min(availableDKP, remainingDKP);
-    const costInXRP = buyAmount * rate;
-
-    remainingDKP -= buyAmount;
-    totalXRP += costInXRP;
-  }
-
-  if (remainingDKP > 0) {
-    console.log('Not enough DKP offers to fulfill the order.');
-    return null;
-  }
-  
-  return (totalXRP / targetAmount).toString();
-}
-*/
   app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
@@ -345,7 +292,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
   }
   let expired = false;
   let fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-  const requiredDkpAmount = 50000; // set the required amount here
   const payloadInfo = await getPayloadInfo(payloadId);
   if (payloadInfo) {
     
@@ -365,51 +311,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
     if(payloadType !== "TrustSet"){
       const hasTrustline = await checkTrustline(addressToUse);
     if (hasTrustline) {
-     
-      //walletAddress  AND payloadInfo.data.response.account are our two choices
-      //let dkpAmount = 0;
-      //const client = new xrpl.Client('wss://xrplcluster.com');
-
-     // if(addressToUse !== null){
-     //   await client.connect();
-     //   console.log("we are on the xrpl now getting balance");
-     //   const balances = await client.getBalances(addressToUse);
-     //   await client.disconnect()
-     //   for (const balance of balances) {
-     //     if (balance.currency === 'DKP') {
-     //       dkpAmount = parseFloat(balance.value);
-     //     }
-     //   }
-     //   console.log("Balance for dkp is: " + dkpAmount);
-     // if(dkpAmount < requiredDkpAmount){
-     //   const dkprequired = requiredDkpAmount - dkpAmount;
-     //   const xummDetailedResponse = {
-     //     meta: {
-     //       NotEnoughLiquidityButHasTrustLine: true,
-     //       RequiredAmount: dkprequired.toString(),
-     //       exists: true,
-     //       uuid: payloadId,
-     //       signed: payload.isSigned, // These are placeholders; replace with real data
-     //       submit: false,
-     //       resolved: false,
-     //       expired: expired,
-     //     },
-     //     custom_meta: {
-     //      blob: payload.customMetablob // Fill this in from the stored data
-     //     },
-     //     response: {
-     //       hex: payloadInfo.data.response.hex,
-     //       txid: payload.txid,
-     //       account: payloadInfo.data.response.account
-     //     }
-     //   };
-     //   console.log("Sending xummDetailedResponse: NON SIGNER THEY CANCELLED w/trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
-     // 
-     //   return res.json(xummDetailedResponse);
-     // }
-     // }
-     // 
-        
       if (payload._timestamp <= fiveMinutesAgo) {
         expired = true;
         const xummDetailedResponse = {
@@ -417,13 +318,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
             TrustLineNotSet: false,
             exists: true,
             uuid: payloadId,
-            signed: payload.isSigned, // These are placeholders; replace with real data
+            signed: payload.isSigned, 
             submit: false,
             resolved: false,
             expired: expired,
           },
           custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
+           blob: payload.customMetablob 
           },
           response: {
             hex: "timeStampExpired",
@@ -431,9 +332,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
             account: "NoAccount"
           }
         };
-        //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-        //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-        //}
         if (!pendingPayloadIds.some(item => item === payload)) {
           pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
         }
@@ -447,13 +345,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
             TrustLineNotSet: false,
             exists: true,
             uuid: payloadId,
-            signed: false, // These are placeholders; replace with real data
+            signed: false, 
             submit: false,
             resolved: false,
             expired: expired,
           },
           custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
+           blob: payload.customMetablob 
           },
           response: {
             hex: payloadInfo.data.response.hex,
@@ -475,13 +373,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
             TrustLineNotSet: true,
             exists: true,
             uuid: payloadId,
-            signed: payload.isSigned, // These are placeholders; replace with real data
+            signed: payload.isSigned, 
             submit: false,
             resolved: false,
             expired: expired,
           },
           custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
+           blob: payload.customMetablob 
           },
           response: {
             hex: "timeStampExpired",
@@ -492,13 +390,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
         if (!pendingPayloadIds.some(item => item === payload)) {
           pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
         }
-        //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-        //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-      //
-        //}
-        //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-        //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-        //}
         console.log("Sending xummDetailedResponse: EXPIRED TX no trustline ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
       
         return res.json(xummDetailedResponse);
@@ -510,13 +401,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
             TrustLineNotSet: true,
             exists: true,
             uuid: payloadId,
-            signed: false, // These are placeholders; replace with real data
+            signed: false, 
             submit: false,
             resolved: false,
             expired: expired,
           },
           custom_meta: {
-           blob: payload.customMetablob // Fill this in from the stored data
+           blob: payload.customMetablob 
           },
           response: {
             hex: payloadInfo.data.response.hex,
@@ -538,13 +429,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
               NoAddressSendBackToMain: true,
               exists: true,
               uuid: payloadId,
-              signed: false, // These are placeholders; replace with real data
+              signed: false, 
               submit: false,
               resolved: false,
               expired: expired,
             },
             custom_meta: {
-             blob: payload.customMetablob // Fill this in from the stored data
+             blob: payload.customMetablob 
             },
             response: {
               hex: payloadInfo.data.response.hex,
@@ -566,13 +457,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
           TrustLineNotSet: true,
           exists: true,
           uuid: payloadId,
-          signed: false, // These are placeholders; replace with real data
+          signed: false, 
           submit: false,
           resolved: false,
           expired: expired,
         },
         custom_meta: {
-         blob: payload.customMetablob // Fill this in from the stored data
+         blob: payload.customMetablob 
         },
         response: {
           hex: payloadInfo.data.response.hex,
@@ -580,19 +471,12 @@ function calculateBestMarketPrice(offers, targetAmount) {
           account: payloadInfo.data.response.account
         }
       };
-      //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-      //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-      //}
-      //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-      //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-      //}
       if (!pendingPayloadIds.some(item => item === payload)) {
         pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
       }
       console.log("Sending xummDetailedResponse: NO TRUSTLINE ", JSON.stringify(xummDetailedResponse, null, 2)); // Log the object
 
       return res.json(xummDetailedResponse);
-      // Perform some other logic here
     }
     }
     
@@ -601,13 +485,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
         meta: {
           exists: true,
           uuid: payloadId,
-          signed: false, // These are placeholders; replace with real data
+          signed: false, 
           submit: false,
           resolved: false,
           expired: expired,
         },
         custom_meta: {
-         blob: payload.customMetablob // Fill this in from the stored data
+         blob: payload.customMetablob 
         },
         response: {
           hex: payloadInfo.data.response.hex,
@@ -623,19 +507,19 @@ function calculateBestMarketPrice(offers, targetAmount) {
      }
 
     if(walletAddress !== payloadInfo.data.response.signer && walletAddress !== "Undefined"){
-      //we need to discard this payload its garbage they tried to trick us
+      //we need to discard this payload 
       const xummDetailedResponse = {
         meta: {
           wrongSigner: true,
           exists: true,
           uuid: payloadId,
-          signed: false, // These are placeholders; replace with real data
+          signed: false, 
           submit: false,
           resolved: false,
           expired: expired,
         },
         custom_meta: {
-         blob: payload.customMetablob // Fill this in from the stored data
+         blob: payload.customMetablob 
         },
         response: {
           hex: payloadInfo.data.response.hex,
@@ -643,13 +527,7 @@ function calculateBestMarketPrice(offers, targetAmount) {
           account: payloadInfo.data.response.account
         }
       };
-      //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-      //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-    //
-      //}
-      //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-      //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-      //}
+     
       if (!pendingPayloadIds.some(item => item === payload)) {
         pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
       }
@@ -659,38 +537,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
       return res.json(xummDetailedResponse);
 
     }
-    /*
-    if(payloadInfo.data.payload.request_json.TransactionType === "TrustSet" && walletAddress === "Undefined"){
-      //we need to discard this payload its garbage they tried to trick us
-      const xummDetailedResponse = {
-        meta: {
-          exists: true,
-          uuid: payloadId,
-          signed: false, // These are placeholders; replace with real data
-          submit: false,
-          resolved: true,
-          expired: expired,
-        },
-        custom_meta: {
-         blob: payload.customMetablob // Fill this in from the stored data
-        },
-        response: {
-          hex: payloadInfo.data.response.hex,
-          txid: payload.txid,
-          account: payloadInfo.data.response.account
-        }
-      };
-      if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-        pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-    
-      }
-      if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-        pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-      }
-      return res.json(xummDetailedResponse);
-
-    }
-  */
   } else {
     console.log("Could not retrieve payload info");
   }
@@ -699,13 +545,13 @@ function calculateBestMarketPrice(offers, targetAmount) {
     meta: {
       exists: true,
       uuid: payloadId,
-      signed: payload.isSigned, // These are placeholders; replace with real data
+      signed: payload.isSigned, 
       submit: false,
       resolved: true,
       expired: expired,
     },
     custom_meta: {
-     blob: payload.customMetablob // Fill this in from the stored data
+     blob: payload.customMetablob 
     },
     response: {
       hex: payloadInfo.data.response.hex,
@@ -718,12 +564,6 @@ function calculateBestMarketPrice(offers, targetAmount) {
     pendingPayloadIds = pendingPayloadIds.filter(item => item !== payload);
   }
   res.json(xummDetailedResponse);
-  //if (!pendingQueue.some(item => item.id === payload.customMetablob)) {
-  //  pendingQueue = pendingQueue.filter(item => item.id !== payload.customMetablob);
-  //}
-  //if (!pendingPayloadIds.some(item => item.customMetablob === payload.customMetablob)) {
-  //  pendingPayloadIds = pendingPayloadIds.filter(item => item.customMetablob !== payload.customMetablob);
-  //}
 });
 async function checkTrustline(account) {
   // Connect to XRPL
@@ -768,11 +608,9 @@ json.balance = response.result.lines[0].balance;
 json.currency = response.result.lines[0].currency;
 res.send(response.result.lines[0].balance);
 console.log("Client has " + response.result.lines[0].balance + " DKP in their wallet.");
-
 client.disconnect()
 }
 );
-
 app.listen(PORT, function(error){
   if (!error) 
   console.log("Server listening on Port", PORT);
