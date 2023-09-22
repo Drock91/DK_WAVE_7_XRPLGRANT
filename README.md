@@ -27,38 +27,36 @@ Welcome to DragonKill.online, a decentralized MMO metaverse where virtual curren
 
 ---Features---
 
-Server-Authority Mechanism: Enabled by Mirror networking, ensuring synchronized and trustworthy game states.
+* Server-Authority Mechanism: Enabled by Mirror networking, ensuring synchronized and trustworthy game states.
 
-Currency and Assets: Utilize playfab.com-generated currencies that integrate with XRP Ledger.
+* Currency and Assets: Utilize playfab.com-generated currencies that integrate with XRP Ledger.
 
-Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
-Technologies Used
+* Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
 
-Heroku App: Central controller for game servers. Responsible for scaling and load balancing.
-Unity 2020.3: The game engine behind the metaverse.
+---Technologies Used---
 
-Mirror Networking: Handles server authority for reliable information synchronization.
+* Heroku App: Central controller for game servers. Responsible for scaling and load balancing.
 
-XRP Ledger & Xumm Wallet: For cryptocurrency and asset management.
+* Unity 2020.3: The game engine behind the metaverse.
 
-xrpscan API: Fetches balances and NFT data.
+* Mirror Networking: Handles server authority for reliable information synchronization.
+
+* XRP Ledger & Xumm Wallet: For cryptocurrency and asset management.
+
+* xrpscan API: Fetches balances and NFT data.
 
 
 ---Architecture---
 
-Heroku App
+* Heroku App - Contains index.js-Includes necessary XRPL libraries for crypto signing
 
-Contains index.js-Includes necessary XRPL libraries for crypto signing
+* Unity 2020.3 - Game engine where the metaverse is constructed
 
-Unity 2020.3 - Game engine where the metaverse is constructed
+* Mirror Networking - Ensures server authority and information reliability
 
-Mirror Networking
+* dragonkill.online Website - Placeholder website currently, will houses the WebGL build for browser-based gameplay (future)
 
-Ensures server authority and information reliability
-
-dragonkill.online Website - Placeholder website currently, will houses the WebGL build for browser-based gameplay (future)
-
-XRP Ledger & Xumm Wallet - Manage and store game currencies
+* XRP Ledger & Xumm Wallet - Manage and store game currencies
 
 
 ---Future Plans---
