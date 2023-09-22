@@ -22,7 +22,7 @@
 
 ---OVERVIEW---
 
-Welcome to DragonKill.online, a decentralized MMO metaverse where virtual currencies and assets take a new dimension. This project utilizes the latest technologies to provide a seamless, reliable, and secure gaming experience.
+Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Online Role-Playing Game (MMORPG) that incorporates Play-to-Earn mechanisms and blockchain technology. Designed with a decentralized architecture, our metaverse offers an unparalleled, secure, and reliable gaming experience. In DragonKill, players have the opportunity to earn DKP tokens, which are seamlessly tradeable on the XRP Ledger decentralized exchange for a variety of currencies. Additionally, DKP can be converted into in-game gold, allowing players to engage with our in-game marketplace and cover associated gameplay costs.
 
 
 ---FEATURES---
