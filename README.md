@@ -48,9 +48,15 @@ Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Onl
 
 ---ARCHITECTURE---
 
-* Heroku App - Contains index.js-Includes necessary XRPL libraries for crypto signing
+* Heroku node.js App - Contains index.js-Includes necessary XRPL libraries for crypto signing 
+  
+  - See index.js 
 
 * Unity 2020.3 - Game engine where the metaverse is constructed
+  
+  -PlayFabClient.cs 
+  
+  -PlayFabServer.cs
 
 * Mirror Networking - Ensures server authority and information reliability
 
