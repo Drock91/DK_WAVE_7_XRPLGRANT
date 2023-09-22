@@ -21,8 +21,8 @@ const headers = {
   'x-api-secret': process.env.XUMM_PRIVATE,
 }
 const Sdk = new XummSdk(process.env.XUMM_PUBLIC, process.env.XUMM_PRIVATE)
-app.use('/transmute', limiter);
-app.use('/register', limiter);
+//app.use('/transmute', limiter);
+//app.use('/register', limiter);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
