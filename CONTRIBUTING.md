@@ -1,3 +1,7 @@
+Audio - 
+tactician creation music : Mountain Spirit by Vadim Krakhmal
+gates of aurdine music : @ContextSensitive  __ - End This [Epic]
+
 Artwork - 
 art tile set DawnLike - dragondeplatino
 
