@@ -38,8 +38,6 @@ setInterval(resetRateLimit, WINDOW_MS);
 
 // Release 95 requests every minute
 
-
-
 //calculate the market price of cheapest dkp order to fill for our player
 // so they get the best price and the order has enough liquidity
 app.post('/GetMarketPrice', async (req, res) => {
