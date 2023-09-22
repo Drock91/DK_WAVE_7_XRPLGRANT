@@ -1,7 +1,7 @@
 Artwork - 
 art tile set DawnLike - dragondeplatino
 
-Networking opensource - 
+Networking open source - 
 Mirror Networking - vis2k - ***MrGadget***
 
 GameEngine - 
