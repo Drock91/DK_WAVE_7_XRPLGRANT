@@ -48,4 +48,4 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 Contact
 Project Maintainer: [Derek Heinrichs]
 Email: [MrHeinrichs12@gmail.com]
-Project Link: DragonKill.online
+Project Link: [DragonKill.online]
