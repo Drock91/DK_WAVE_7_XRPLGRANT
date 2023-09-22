@@ -1,5 +1,6 @@
 # DK_WAVE_7_XRPLGRANT
 DragonKill.online
+
 Table of Contents
 Overview
 Features
@@ -14,6 +15,7 @@ Overview
 Welcome to DragonKill.online, a decentralized MMO metaverse where virtual currencies and assets take a new dimension. This project utilizes the latest technologies to provide a seamless, reliable, and secure gaming experience.
 
 Features
+
 Server-Authority Mechanism: Enabled by Mirror networking, ensuring synchronized and trustworthy game states.
 Currency and Assets: Utilize playfab.com-generated currencies that integrate with XRP Ledger.
 Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
