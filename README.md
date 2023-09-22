@@ -16,13 +16,15 @@ Welcome to DragonKill.online, a decentralized MMO metaverse where virtual curren
 Features
 Server-Authority Mechanism: Enabled by Mirror networking, ensuring synchronized and trustworthy game states.
 Currency and Assets: Utilize playfab.com-generated currencies that integrate with XRP Ledger.
-Multi-platform Support: Aimed for both standalone and browser-based gaming experiences.
+Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
 Technologies Used
+
 Heroku App: Central controller for game servers. Responsible for scaling and load balancing.
 Unity 2020.3: The game engine behind the metaverse.
 Mirror Networking: Handles server authority for reliable information synchronization.
 XRP Ledger & Xumm Wallet: For cryptocurrency and asset management.
 xrpscan API: Fetches balances and NFT data.
+
 Architecture
 Heroku App
 Contains index.js
@@ -35,6 +37,7 @@ dragonkill.online Website
 Houses the WebGL build for browser-based gameplay (future)
 XRP Ledger & Xumm Wallet
 Manage and store game currencies
+
 Future Plans
 Transition from Windows containers to Linux containers for better transport interoperability.
 WebGL build to enable browser-based gameplay.
