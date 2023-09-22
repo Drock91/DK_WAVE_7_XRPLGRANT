@@ -62,7 +62,7 @@ Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Onl
 ---FUTURE PLANS---
 
 Transition from Windows containers to Linux containers for better transport interoperability.
-WebGL build to enable browser-based gameplay. House and guild plot NFT integration into main town, sandbox marketplace to link multiple game servers for one world effect.
+WebGL build to enable browser-based gameplay. House and guild plot NFT integration into main town, sandbox marketplace to link multiple game servers for one world effect. There is so much more to come!
 
 
 ---CONTRIBUTING---
