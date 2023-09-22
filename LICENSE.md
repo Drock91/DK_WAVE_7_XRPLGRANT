@@ -38,4 +38,4 @@ This EULA constitutes the entire agreement between you and DKP Gaming LLC, and s
 
 AMENDMENTS
 
-DKP Gaming LLC reserves the right to modify this EULA at any time. The most current version will always be available on [dragonkill.online/license]
+DKP Gaming LLC reserves the right to modify this EULA at any time. The most current version will always be available on [dragonkill.online/license/]
