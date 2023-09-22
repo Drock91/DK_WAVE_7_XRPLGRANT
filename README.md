@@ -1,5 +1,5 @@
 # DK_WAVE_7_XRPLGRANT
----Table of Contents---
+---TABLE OF CONTENTS---
 
 * Overview
 
@@ -20,12 +20,12 @@
 * Contact
 
 
----Overview---
+---OVERVIEW---
 
 Welcome to DragonKill.online, a decentralized MMO metaverse where virtual currencies and assets take a new dimension. This project utilizes the latest technologies to provide a seamless, reliable, and secure gaming experience.
 
 
----Features---
+---FEATURES---
 
 * Server-Authority Mechanism: Enabled by Mirror networking, ensuring synchronized and trustworthy game states.
 
@@ -33,7 +33,7 @@ Welcome to DragonKill.online, a decentralized MMO metaverse where virtual curren
 
 * Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
 
----Technologies Used---
+---TECHNOLOGIES USED---
 
 * Heroku App: Central controller for game servers. Responsible for scaling and load balancing.
 
@@ -46,7 +46,7 @@ Welcome to DragonKill.online, a decentralized MMO metaverse where virtual curren
 * xrpscan API: Fetches balances and NFT data.
 
 
----Architecture---
+---ARCHITECTURE---
 
 * Heroku App - Contains index.js-Includes necessary XRPL libraries for crypto signing
 
@@ -59,23 +59,23 @@ Welcome to DragonKill.online, a decentralized MMO metaverse where virtual curren
 * XRP Ledger & Xumm Wallet - Manage and store game currencies
 
 
----Future Plans---
+---FUTURE PLANS---
 
 Transition from Windows containers to Linux containers for better transport interoperability.
-WebGL build to enable browser-based gameplay.
+WebGL build to enable browser-based gameplay. House and guild plot NFT integration into main town, sandbox marketplace to link multiple game servers for one world effect.
 
 
----Contributing---
+---CONTRIBUTING---
 
 We appreciate all contributions. See CONTRIBUTING.md for details.
 
 
----License---
+---LICENSE---
 
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 
 
----Contact---
+---CONTACT---
 
 Project Maintainer: [Derek Heinrichs]
 
