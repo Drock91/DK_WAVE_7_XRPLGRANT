@@ -4,17 +4,28 @@ DragonKill.online
 Table of Contents
 
 Overview
+
 Features
+
 Technologies Used
+
 Architecture
+
 Future Plans
+
 Getting Started
+
 Contributing
+
 License
+
 Contact
+
+
 Overview
 
 Welcome to DragonKill.online, a decentralized MMO metaverse where virtual currencies and assets take a new dimension. This project utilizes the latest technologies to provide a seamless, reliable, and secure gaming experience.
+
 
 Features
 
@@ -34,6 +45,7 @@ XRP Ledger & Xumm Wallet: For cryptocurrency and asset management.
 
 xrpscan API: Fetches balances and NFT data.
 
+
 Architecture
 
 Heroku App
@@ -50,17 +62,27 @@ dragonkill.online Website - Placeholder website currently, will houses the WebGL
 
 XRP Ledger & Xumm Wallet - Manage and store game currencies
 
+
 Future Plans
+
 Transition from Windows containers to Linux containers for better transport interoperability.
 WebGL build to enable browser-based gameplay.
 
+
 Contributing
+
 We appreciate all contributions. See CONTRIBUTING.md for details.
 
+
 License
+
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 
+
 Contact
+
 Project Maintainer: [Derek Heinrichs]
+
 Email: [MrHeinrichs12@gmail.com]
+
 Project Link: [dragonkill.online]
