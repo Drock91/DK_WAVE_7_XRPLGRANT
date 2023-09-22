@@ -38,6 +38,52 @@ setInterval(resetRateLimit, WINDOW_MS);
 
 // Release 95 requests every minute
 
+
+
+//calculate the market price of cheapest dkp order to fill for our player
+// so they get the best price and the order has enough liquidity
+app.post('/GetMarketPrice', async (req, res) => {
+  const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
+  const client = new xrpl.Client('wss://xrplcluster.com');
+  await client.connect();
+  const orderBook = await client.request({
+    command: 'book_offers',
+    taker_pays: {
+      currency: 'XRP'
+    },
+    taker_gets: {
+      currency: 'DKP',
+      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J'
+    },
+    limit: 1000
+  });
+  await client.disconnect();
+  // Sort the offers by rate in ascending order
+  orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+  let aggregateLiquidity = 0;
+  let bestRate = 0;
+  for (const offer of orderBook.result.offers) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    aggregateLiquidity += availableDKP;
+    if (aggregateLiquidity >= desiredAmount) {
+      bestRate = parseFloat(offer.quality);
+      break;
+    }
+  }
+  if (bestRate === 0) {
+    console.log('Not enough liquidity to fulfill 50,000 DKP.');
+    res.json({ meta: { error: 'Not enough liquidity' } });
+    return;
+  }
+  const bestMarketPrice = ((bestRate / 1000000 )* desiredAmount).toString();
+  console.log(bestMarketPrice + " was our best market price");
+  const xummDetailedResponse = {
+    meta: {
+      bestMarketPrice: bestMarketPrice,
+    }
+  };
+  res.json(xummDetailedResponse);
+});
 app.post('/xummqueue', (req, res) => {
   const id = req.query.id;  // Extracting the ID from the URL query parameter
   if (id === undefined) {
@@ -142,29 +188,15 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
-  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
-  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
-  //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
-  //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
   const payloadId = req.body.payloadResponse.payload_uuidv4;
-  //if(!payloadId === null){
     console.log(req.body.payloadResponse.payload_uuidv4 + " this was our payloadResponse!")
-    //const verifying = await Verify.getOne(payloadId)
-    //if(verifying){
-    //  console.log("we made it to verify from xumm hook")
-    //  // You can push additional information to your pendingPayloadIds array if needed.
-    //  //pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob });
-    //}
     const _timestamp = Date.now();
     const isSigned = req.body.payloadResponse.signed;
     const customMetablob = req.body.custom_meta.blob;
     const txid = req.body.payloadResponse.txid;
-
     // You can push additional information to your pendingPayloadIds array if needed.
     console.log("adding to pendingPayloads !! ************************ LOOK FOR THIS IN LOG")
     pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob, txid});
-  //}
-  
   res.status(200).send("OK");
 });
 // Cleanup old entries every 5 minutes
@@ -185,50 +217,7 @@ async function getPayloadInfo(payloadId) {
     return null;
   }
 }
-//calculate the market price of cheapest dkp order to fill for our player
-// so they get the best price and the order has enough liquidity
-app.post('/GetMarketPrice', async (req, res) => {
-  const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
-  const client = new xrpl.Client('wss://xrplcluster.com');
-  await client.connect();
-  const orderBook = await client.request({
-    command: 'book_offers',
-    taker_pays: {
-      currency: 'XRP'
-    },
-    taker_gets: {
-      currency: 'DKP',
-      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J'
-    },
-    limit: 1000
-  });
-  await client.disconnect();
-  // Sort the offers by rate in ascending order
-  orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
-  let aggregateLiquidity = 0;
-  let bestRate = 0;
-  for (const offer of orderBook.result.offers) {
-    const availableDKP = parseFloat(offer.TakerGets.value);
-    aggregateLiquidity += availableDKP;
-    if (aggregateLiquidity >= desiredAmount) {
-      bestRate = parseFloat(offer.quality);
-      break;
-    }
-  }
-  if (bestRate === 0) {
-    console.log('Not enough liquidity to fulfill 50,000 DKP.');
-    res.json({ meta: { error: 'Not enough liquidity' } });
-    return;
-  }
-  const bestMarketPrice = ((bestRate / 1000000 )* desiredAmount).toString();
-  console.log(bestMarketPrice + " was our best market price");
-  const xummDetailedResponse = {
-    meta: {
-      bestMarketPrice: bestMarketPrice,
-    }
-  };
-  res.json(xummDetailedResponse);
-});
+
 
   app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
   if (currentRequests < MAX_REQUESTS) {
