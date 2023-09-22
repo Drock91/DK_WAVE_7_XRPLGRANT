@@ -38,11 +38,7 @@ Manage and store game currencies
 Future Plans
 Transition from Windows containers to Linux containers for better transport interoperability.
 WebGL build to enable browser-based gameplay.
-Getting Started
-Clone the repo: git clone https://github.com/your_username_/DragonKill.online.git
-Install the required packages.
-Follow the setup guidelines for Unity and Heroku.
-Run the server and then the client to get into the game.
+
 Contributing
 We appreciate all contributions. See CONTRIBUTING.md for details.
 
@@ -50,6 +46,6 @@ License
 This project is licensed under the MIT License - see the LICENSE.md file for details.
 
 Contact
-Project Maintainer: [Your Name]
-Email: [Your Email]
+Project Maintainer: [Derek Heinrichs]
+Email: [MrHeinrichs12@gmail.com]
 Project Link: DragonKill.online
