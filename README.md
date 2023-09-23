@@ -86,6 +86,7 @@ Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Onl
 
   - XRP Ledger code can be found specifically in the following scripts on the provided code line. 
   - PlayFabServer.cs 
+    -
     - Method VerifyPlayerPayment line 469, used to determine if a player has already registered with an XRP wallet before registering a wallet. 
     - Method GetTransactionHistory line 496, used with VerifyPlayerPayment to get tx history of our registration xrp address to check if their wallet has paid before for registration. if it has its rejected
     - Method SubmitBlobToXRPL line 1536, used to submit a blob for processing in the XRPL
