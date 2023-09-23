@@ -76,7 +76,7 @@ ARCHITECTURE
 
 * XRP Ledger & Xumm Wallet - Manage and store game currencies
 
-  - XRP Ledger code can be found specifically in the following scripts on the provided code line. 
+  - XRP Ledger code can be found below in the following scripts and methods
   - [PlayFabServer.cs](PlayFabServer.cs)
     -
     - Method VerifyPlayerPayment line 469, used to determine if a player has already registered with an XRP wallet before registering a wallet. 
@@ -89,8 +89,8 @@ ARCHITECTURE
   - [Index.js](Index.js)
     -
     - post/GetMarketPrice line 43, gets best avail price of DKP from the XRP Ledger and sends to game server for processing their order
-    - post/dkpsend line 106, sends the XLS-20 DKP token to their Xumm wallet and tells the game server to burn the appropriate amount of gold from their playfab         account
-    - get/check-payload/:payloadId/:walletAddress line 220, polling method from game servers to check if a payload has been completed and sends information to           game server for processing
+    - post/dkpsend line 106, sends the XLS-20 DKP token to their Xumm wallet and tells the game server to burn the appropriate amount of gold from their playfab account
+    - get/check-payload/:payloadId/:walletAddress line 220, polling method from game servers to check if a payload has been completed and sends information to game server for processing
     - async function checkTrustline line 520, checks trustline of account
     - post/balance line 543, not in use anymore we used to use this to check their balances
   
