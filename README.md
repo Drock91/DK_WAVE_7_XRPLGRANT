@@ -35,8 +35,9 @@ TECHNOLOGIES USED
 
 * XRP Ledger & Xumm Wallet: For cryptocurrency and asset management.
 
-* xrpscan API: Fetches balances and NFT data.
+* XRPscan API: Fetches balances and NFT data.
 
+* PlasticSCM: Version control
 
 ARCHITECTURE
 -
