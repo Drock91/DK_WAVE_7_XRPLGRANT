@@ -98,6 +98,7 @@ ARCHITECTURE
     - Method CheckXummStatusAPP line 1728, used to poll our heroku app for the Xumm webhook callback. 
     - Method DKPTOGOLDTRANSMUTE line 1752, used to transmute DKP XLS-20 token to in-game gold the playfab virtual currency. 
   - [Index.js](Index.js)
+    -
     - post/GetMarketPrice line 43, gets best avail price of DKP from the XRP Ledger and sends to game server for processing their order
     - post/dkpsend line 106, sends the XLS-20 DKP token to their Xumm wallet and tells the game server to burn the appropriate amount of gold from their playfab         account
     - get/check-payload/:payloadId/:walletAddress line 220, polling method from game servers to check if a payload has been completed and sends information to           game server for processing
