@@ -9,27 +9,6 @@
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
-TABLE OF CONTENTS
-  -
-
-* Overview
-
-* Features
-
-* Technologies Used
-
-* Architecture
-
-* Future Plans
-
-* Getting Started
-
-* Contributing
-
-* License
-
-* Contact
-
 
 OVERVIEW
 -
