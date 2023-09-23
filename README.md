@@ -93,7 +93,8 @@ Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Onl
     - Method RegisterTrustSet line 584, used for setting a trust line with DKP on registration into the game
     - Method CheckXummStatusAPP line 1728, used to poll our heroku app for the Xumm webhook callback. 
     - Method DKPTOGOLDTRANSMUTE line 1752, used to transmute DKP XLS-20 token to in-game gold the playfab virtual currency. 
-   
+  - Index.js
+    - 
   
 
 
