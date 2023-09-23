@@ -68,7 +68,7 @@ ARCHITECTURE
 
   - [WeaponDrop.cs](WeaponDrop.cs) used for looting weapon stands that are networked
 
-  - [TrapDrop](TrapDrop) networked code for damaging characters
+  - [TrapDrop.cs](TrapDrop.cs) networked code for damaging characters
 
 * Mirror Networking - Ensures server authority and information reliability
 
