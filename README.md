@@ -1,4 +1,14 @@
 # DK_WAVE_7_XRPLGRANT
+## TABLE OF CONTENTS
+- [Overview](#overview)
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Architecture](#architecture)
+- [Future Plans](#future-plans)
+- [Getting Started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 TABLE OF CONTENTS
   -
 
