@@ -116,6 +116,6 @@ CONTACT
 -
 Project Maintainer: [Derek Heinrichs]
 
-Email: [MrHeinrichs12@gmail.com]
+Email: [customersupport@dragonkill.online]
 
 Project Link: [dragonkill.online](https://www.dragonkill.online)
