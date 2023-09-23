@@ -79,20 +79,20 @@ ARCHITECTURE
   - XRP Ledger code can be found below in the following scripts and methods
   - [PlayFabServer.cs](PlayFabServer.cs)
     -
-    - Method VerifyPlayerPayment line 469, used to determine if a player has already registered with an XRP wallet before registering a wallet. 
-    - Method GetTransactionHistory line 496, used with VerifyPlayerPayment to get tx history of our registration xrp address to check if their wallet has paid before for registration. if it has its rejected
-    - Method RegisterTrustSet line 584, used for setting a trust line with DKP on registration into the game
-    - Method PurchaseDKPMarketPriceRegistration line 991, used to get best price of DKP from our index.js script on our heroku app using xrpl library.
-    - Method SubmitBlobToXRPL line 1536, used to submit a blob for processing in the XRPL
-    - Method CheckXummStatusAPP line 1728, used to poll our heroku app for the Xumm webhook callback. 
-    - Method DKPTOGOLDTRANSMUTE line 1752, used to transmute DKP XLS-20 token to in-game gold the playfab virtual currency. 
+    - LINE 469 Method VerifyPlayerPayment - used to determine if a player has already registered with an XRP wallet before registering a wallet. 
+    - LINE 496 Method GetTransactionHistory - used with VerifyPlayerPayment to get tx history of our registration xrp address to check if their wallet has paid           before for registration. if it has its rejected
+    - LINE 584 Method RegisterTrustSet - used for setting a trust line with DKP on registration into the game
+    - LINE 991 Method PurchaseDKPMarketPriceRegistration - used to get best price of DKP from our index.js script on our heroku app using xrpl library.
+    - LINE 1536 Method SubmitBlobToXRPL - used to submit a blob for processing in the XRPL
+    - LINE 1728 Method CheckXummStatusAPP - used to poll our heroku app for the Xumm webhook callback. 
+    - LINE 1752 Method DKPTOGOLDTRANSMUTE - used to transmute DKP XLS-20 token to in-game gold the playfab virtual currency. 
   - [Index.js](Index.js)
     -
-    - post/GetMarketPrice line 43, gets best avail price of DKP from the XRP Ledger and sends to game server for processing their order
-    - post/dkpsend line 106, sends the XLS-20 DKP token to their Xumm wallet and tells the game server to burn the appropriate amount of gold from their playfab account
-    - get/check-payload/:payloadId/:walletAddress line 220, polling method from game servers to check if a payload has been completed and sends information to game server for processing
-    - async function checkTrustline line 520, checks trustline of account
-    - post/balance line 543, not in use anymore we used to use this to check their balances
+    - LINE 43 post/GetMarketPrice - gets best avail price of DKP from the XRP Ledger and sends to game server for processing their order
+    - LINE 106 post/dkpsend - sends the XLS-20 DKP token to their Xumm wallet and tells the game server to burn the appropriate amount of gold from their playfab account
+    - LINE 220 get/check-payload/:payloadId/:walletAddress - polling method from game servers to check if a payload has been completed and sends information to game server for processing
+    - LINE 520 async function checkTrustline - checks trustline of account
+    - LINE 543 post/balance - not in use anymore we used to use this to check their balances
   
 
 
