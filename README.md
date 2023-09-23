@@ -88,7 +88,7 @@ ARCHITECTURE
 * XRP Ledger & Xumm Wallet - Manage and store game currencies
 
   - XRP Ledger code can be found specifically in the following scripts on the provided code line. 
-  - [PlayFabServer.cs](.DK_WAVE_7_XRPLGRANT/PlayFabServer.cs)
+  - [PlayFabServer.cs](PlayFabServer.cs)
     -
     - Method VerifyPlayerPayment line 469, used to determine if a player has already registered with an XRP wallet before registering a wallet. 
     - Method GetTransactionHistory line 496, used with VerifyPlayerPayment to get tx history of our registration xrp address to check if their wallet has paid before for registration. if it has its rejected
