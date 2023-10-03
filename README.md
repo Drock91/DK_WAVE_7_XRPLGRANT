@@ -12,7 +12,7 @@
 
 OVERVIEW
 -
-Welcome to DragonKill.online, an innovative 2D fantasy Massively Multiplayer Online Role-Playing Game (MMORPG) that incorporates Play-to-Earn mechanisms and blockchain technology. Designed with a decentralized architecture, our metaverse offers an unparalleled, secure, and reliable gaming experience. In DragonKill, players have the opportunity to earn DKP tokens, which are seamlessly tradeable on the XRP Ledger decentralized exchange for a variety of currencies. Additionally, DKP can be converted into in-game gold, allowing players to engage with our in-game marketplace and cover associated gameplay costs.
+Welcome to DragonKill, an innovative 2D fantasy Massively Multiplayer Online Role-Playing Game (MMORPG) that incorporates Play-to-Earn mechanisms and blockchain technology. Designed with a decentralized architecture, our metaverse offers a secure and reliable gaming experience. In DragonKill, players have the opportunity to earn DKP tokens, which are seamlessly tradeable on the XRP Ledger decentralized exchange for a variety of currencies. Additionally, DKP can be converted into in-game gold, allowing players to engage with our in-game marketplace and cover associated gameplay costs.
 
 
 FEATURES
@@ -22,7 +22,7 @@ FEATURES
 
 * Currency and Assets: Utilize playfab.com-generated currencies that integrate with XRP Ledger.
 
-* Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalonendows.
+* Multi-platform Support: Aimed for browser-based gaming experiences, -currently standalone windows.
 
 TECHNOLOGIES USED
 -
