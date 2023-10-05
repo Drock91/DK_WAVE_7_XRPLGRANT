@@ -60,8 +60,6 @@ app.post('/xummqueue', (req, res) => {
   }
 });
 //api endpoint for transmuting gold to DKP 
-//Adding a security key system here that will provide game servers with a token on start up that is maintained here in heroku. 
-//The token will be how servers are able to unlock this endpoint to make transmutes happen for players
 app.post('/dkpsend', async (req, res, next) => {
   console.log('We are listening')
   const apiKeyFromRequest = req.headers['x-api-key'];
