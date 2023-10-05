@@ -21,8 +21,8 @@ const headers = {
   'x-api-secret': process.env.XUMM_PRIVATE,
 }
 const Sdk = new XummSdk(process.env.XUMM_PUBLIC, process.env.XUMM_PRIVATE)
-//app.use('/transmute', limiter);
-//app.use('/register', limiter);
+app.use('/transmute', limiter);
+app.use('/register', limiter);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -38,61 +38,20 @@ setInterval(resetRateLimit, WINDOW_MS);
 
 // Release 95 requests every minute
 
-//calculate the market price of cheapest dkp order to fill for our player
-// so they get the best price and the order has enough liquidity
-app.post('/GetMarketPrice', async (req, res) => {
-  const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
-  const client = new xrpl.Client('wss://xrplcluster.com');
-  await client.connect();
-  const orderBook = await client.request({
-    command: 'book_offers',
-    taker_pays: {
-      currency: 'XRP'
-    },
-    taker_gets: {
-      currency: 'DKP',
-      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J'
-    },
-    limit: 1000
-  });
-  await client.disconnect();
-  // Sort the offers by rate in ascending order
-  orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
-  let aggregateLiquidity = 0;
-  let bestRate = 0;
-  for (const offer of orderBook.result.offers) {
-    const availableDKP = parseFloat(offer.TakerGets.value);
-    aggregateLiquidity += availableDKP;
-    if (aggregateLiquidity >= desiredAmount) {
-      bestRate = parseFloat(offer.quality);
-      break;
-    }
-  }
-  if (bestRate === 0) {
-    console.log('Not enough liquidity to fulfill 50,000 DKP.');
-    res.json({ meta: { error: 'Not enough liquidity' } });
-    return;
-  }
-  const bestMarketPrice = ((bestRate / 1000000 )* desiredAmount).toString();
-  console.log(bestMarketPrice + " was our best market price");
-  const xummDetailedResponse = {
-    meta: {
-      bestMarketPrice: bestMarketPrice,
-    }
-  };
-  res.json(xummDetailedResponse);
-});
 app.post('/xummqueue', (req, res) => {
-  const id = req.query.id;  // Extracting the ID from the URL query parameter
+  const apiKeyFromRequest = req.headers['x-api-key'];
+    const apiKeyFromEnv = process.env.CONVO_KEY;
+
+    if (apiKeyFromRequest !== apiKeyFromEnv) {
+        res.status(401).json({message: 'Unauthorized'});
+        return;
+    }
+  const id = req.query.id;  // Extracting the ID from the URL query parameter 
+  //id will be how we queue players to use the xumm queue, need to contact xumm for possible rate increase or possibly get multiple X apps to handle volitile requests
   if (id === undefined) {
     res.status(400).send("ID is required");
     return;
   }
-  //if (!pendingQueue.some(item => item.id === id)) {
-  //  pendingQueue.push({ id, timestamp: Date.now() });
-  //}
-  // Your processing logic here, you can now use the 'id'
-
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
     res.status(200).send("Request processed");
@@ -105,6 +64,17 @@ app.post('/xummqueue', (req, res) => {
 //The token will be how servers are able to unlock this endpoint to make transmutes happen for players
 app.post('/dkpsend', async (req, res, next) => {
   console.log('We are listening')
+  const apiKeyFromRequest = req.headers['x-api-key'];
+    const apiKeyFromEnv = process.env.CONVO_KEY;
+
+    if (apiKeyFromRequest !== apiKeyFromEnv) {
+        res.status(401).json({message: 'Unauthorized'});
+        return;
+    }
+  if (!req.body.userId || !req.body.walletAddress || !req.body.goldAmount) {
+    res.status(400).send("Bad Request: Missing required parameters.");
+    return;
+  }
   console.log(req.body.userId + req.body.walletAddress + req.body.goldAmount);
   const client = new xrpl.Client("wss://xrplcluster.com");
   await client.connect();
@@ -186,7 +156,12 @@ app.post('/xumm-webhook', async (req, res) => {
       console.warn('Signature mismatch. Possible tampering detected.');
       return res.status(401).send('Unauthorized');
     }
+  //console.log("This was our req body:", JSON.stringify(req.body, null, 2));
+  //console.log("This was our req headers:", JSON.stringify(req.headers, null, 2));
+  //console.log("This was our payloadResponse:", JSON.stringify(req.body.payloadResponse, null, 2));
+  //console.log("This was our custom_meta:", JSON.stringify(req.body.custom_meta, null, 2));
   const payloadId = req.body.payloadResponse.payload_uuidv4;
+  //if(!payloadId === null){
     console.log(req.body.payloadResponse.payload_uuidv4 + " this was our payloadResponse!")
     const _timestamp = Date.now();
     const isSigned = req.body.payloadResponse.signed;
@@ -195,6 +170,8 @@ app.post('/xumm-webhook', async (req, res) => {
     // You can push additional information to your pendingPayloadIds array if needed.
     console.log("adding to pendingPayloads !! ************************ LOOK FOR THIS IN LOG")
     pendingPayloadIds.push({ payloadId, _timestamp, isSigned, customMetablob, txid});
+  //}
+  
   res.status(200).send("OK");
 });
 // Cleanup old entries every 5 minutes
@@ -215,9 +192,108 @@ async function getPayloadInfo(payloadId) {
     return null;
   }
 }
+//calculate the market price of cheapest dkp order to fill for our player
+// so they get the best price and the order has enough liquidity
+app.post('/GetMarketPrice', async (req, res) => {
+  const apiKeyFromRequest = req.headers['x-api-key'];
+    const apiKeyFromEnv = process.env.CONVO_KEY;
 
+    if (apiKeyFromRequest !== apiKeyFromEnv) {
+        res.status(401).json({message: 'Unauthorized'});
+        return;
+    }
+    // Parse the desired amount from the request body and convert it to a float
+  const desiredAmount = parseFloat(req.body.amount);  // Assuming amount is passed as a string
+    // Initialize an XRPL client and connect to it
+  const client = new xrpl.Client('wss://xrplcluster.com');
+  await client.connect();
+   // Request the order book for XRP to DKP
+   const orderBook = await client.request({
+    command: 'book_offers',
+    taker_pays: {
+      currency: 'XRP'
+    },
+    taker_gets: {
+      currency: 'DKP',
+      issuer: 'rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J'
+    },
+    limit: 1000
+  });
+  await client.disconnect();
+  // Sort the offers by rate in ascending order
+  orderBook.result.offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+    // Initialize variables to hold aggregate liquidity and best rate
+  let aggregateLiquidity = 0;
+  let bestRate = 0;
+    // Loop through sorted offers to find the best rate that can fulfill the desired amount
+  for (const offer of orderBook.result.offers) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    aggregateLiquidity += availableDKP;
+    if (aggregateLiquidity >= desiredAmount) {
+      bestRate = parseFloat(offer.quality);
+      break;
+    }
+  }
+   // Check if there's enough liquidity to fulfill the request
+  if (bestRate === 0) {
+    console.log('Not enough liquidity to fulfill 50,000 DKP.');
+    res.json({ meta: { error: 'Not enough liquidity' } });
+    return;
+  }
+  const bestMarketPrice = ((bestRate / 1000000 )* desiredAmount).toString();
+  console.log(bestMarketPrice + " was our best market price");
+  //sending the best market price for the amount we have requested, this wil be created in the game server now via xumm rest api
+  const xummDetailedResponse = {
+    meta: {
+      bestMarketPrice: bestMarketPrice,
+    }
+  };
+  res.json(xummDetailedResponse);
+});
+function calculateBestMarketPrice(offers, targetAmount) {
+  let remainingDKP = targetAmount;
+  let totalXRP = 0;
 
+  // Sort the offers by rate in ascending order
+  //offers.sort((a, b) => parseFloat(a.quality) - parseFloat(b.quality));
+  offers.sort((a, b) => parseFloat(b.quality) - parseFloat(a.quality));
+
+  for (const offer of offers) {
+    const availableDKP = parseFloat(offer.TakerGets.value);
+    const rate = parseFloat(offer.quality);
+
+    console.log(`Evaluating offer: Available DKP: ${availableDKP}, Rate: ${rate}`);
+
+    if (remainingDKP <= 0) break;
+
+    const buyAmount = Math.min(availableDKP, remainingDKP);
+    const costInXRP = buyAmount * rate;
+
+    remainingDKP -= buyAmount;
+    totalXRP += costInXRP;
+
+    console.log(`Buying amount: ${buyAmount}, Cost in XRP: ${costInXRP}`);
+    console.log(`Remaining DKP after this offer: ${remainingDKP}, Total XRP so far: ${totalXRP}`);
+  }
+
+  if (remainingDKP > 0) {
+    console.log('Not enough DKP offers to fulfill the order.');
+    return null;
+  }
+
+  const bestMarketPrice = totalXRP / targetAmount;
+  console.log(`Final best market price: ${bestMarketPrice}`);
+
+  return (bestMarketPrice * 100).toString();
+}
   app.get('/check-payload/:payloadId/:walletAddress', async(req, res) => {
+    const apiKeyFromRequest = req.headers['x-api-key'];
+    const apiKeyFromEnv = process.env.CONVO_KEY;
+
+    if (apiKeyFromRequest !== apiKeyFromEnv) {
+        res.status(401).json({message: 'Unauthorized'});
+        return;
+    }
   if (currentRequests < MAX_REQUESTS) {
     currentRequests++;
   } else {
@@ -540,32 +616,10 @@ async function checkTrustline(account) {
 
   return false // Trustline not found
 }
-app.post('/balance', async (req, res, next) => {
-  //this assumes the json object coming in is called wallet
-  var wallet = req.get(req.body.wallet);
-  console.log(req.body.wallet);
-  //no longer in the xumm world. we doing straight comms to xrpl
-  const client = new xrpl.Client("wss://xrplcluster.com")
-  await client.connect()
-  console.log('We are listening')
-  // Get info from the ledger about the address we just funded
-  const response = await client.request({
-    "command": "account_lines",
-    "account": req.body.wallet,
-    "ledger_index": "validated",
-    "peer": "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J"
-})
-var json = {};
-json.balance = response.result.lines[0].balance;
-json.currency = response.result.lines[0].currency;
-res.send(response.result.lines[0].balance);
-console.log("Client has " + response.result.lines[0].balance + " DKP in their wallet.");
-client.disconnect()
-}
-);
 app.listen(PORT, function(error){
   if (!error) 
   console.log("Server listening on Port", PORT);
   else
   console.log("Error Occured");
 })
+
