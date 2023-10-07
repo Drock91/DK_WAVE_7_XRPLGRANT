@@ -372,17 +372,17 @@ public static class JsonHelper
         }
         public static PlayFabServer instance;
         #if UNITY_SERVER || UNITY_EDITOR
-        private string _GOLD_WALLET_ADDRESS = ""; //"rUMrzjvDEeH2zQ49TMEn62r69tMa8MWi65";
-        private string _GOLD_WALLET_SIGN = ""; //"rUMrzjvDEeH2zQ49TMEn62r69tMa8MWi65";
-        private string _Heroku_URL = ""; //"rUMrzjvDEeH2zQ49TMEn62r69tMa8MWi65";
+        private string _GOLD_WALLET_ADDRESS = ""; 
+        private string _GOLD_WALLET_SIGN = ""; 
+        private string _Heroku_URL = ""; 
 
-        private string _REGISTRATION_WALLET_ADDRESS = "rhB7i1DDJAmw1A3sVi6nR89GWcUkNPo6KJ"; //"rUMrzjvDEeH2zQ49TMEn62r69tMa8MWi65";
-        private string _GAME_WALLET_ADDRESS = ""; //"rUMrzjvDEeH2zQ49TMEn62r69tMa8MWi65";
-        private string _DKP_DESTINATION_ADDRESS = ""; //"rhB7i1DDJAmw1A3sVi6nR89GWcUkNPo6KJ";
+        private string _REGISTRATION_WALLET_ADDRESS = "rhB7i1DDJAmw1A3sVi6nR89GWcUkNPo6KJ";
+        private string _GAME_WALLET_ADDRESS = ""; 
+        private string _DKP_DESTINATION_ADDRESS = "";
         private string _DKP_ISSUER = "rM7zpZQBfz9y2jEkDrKcXiYPitJx9YTS1J";
         private string _DKP_NFT_ISSUER = "rhB7i1DDJAmw1A3sVi6nR89GWcUkNPo6KJ";
-        private string _DKP_XAPP_FIRST =  ""; //"38b9f3fa-d4d1-4666-bf10-bd9931c1031d";
-        private string _DKP_XAPP_SECOND = ""; // "660fe58b-83d3-46fc-a3fa-9e8a86e5ef13";
+        private string _DKP_XAPP_FIRST =  ""; 
+        private string _DKP_XAPP_SECOND = ""; 
         private string xrpscanAPI = "https://api.xrpscan.com/api/v1/account/";
         private static string sharedSecret = "";
         private static string salt = "";
